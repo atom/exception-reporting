@@ -1,14 +1,11 @@
-## Metrics
+## Exception reporting
 
-A simple plugin that reports usage statistics.
+A simple plugin that reports javascript exceptions to haystack.
 
-### Collected data
+For haystack's API see https://github.campfirenow.com/room/460265/paste/1044103238
 
-* When the plugin is loaded
-  * The project path
-  * The login of the user (if USER is set)
-  * A unique session id
-* When the plugin is unloaded
-  * The project path
-  * The login of the user (if USER is set)
-  * A unique session id
+### TODO
+
+* Figure out how to properly authenticate to haystack
+  * I'm not sure how secure the credentials need to be.
+* Figure out if we need to provision the atom app ahead of time.

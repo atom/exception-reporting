@@ -10,7 +10,7 @@ module.exports =
   activate: (state) ->
     if _.isFunction(window.onerror)
       @originalOnError = window.onerror
-    window.onerror = (message, url, line) ->
+    window.onerror = (message, url, line) =>
       @reporter.send(@collector.getDataForError(message, url, line))
       @originalOnError(arguments...)
 
@@ -18,4 +18,4 @@ module.exports =
     if @originalOnError
       window.onerror = @originalOnError
     else
-      window.onerror = undefined
+      window.onerror = null
