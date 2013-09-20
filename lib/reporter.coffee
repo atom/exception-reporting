@@ -1,4 +1,4 @@
-_ = require 'underscore'
+{_} = require 'atom'
 request = require 'request'
 
 module.exports =
