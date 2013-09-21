@@ -1,4 +1,3 @@
-{_} = require 'atom'
 request = require 'request'
 
 module.exports =
@@ -6,11 +5,13 @@ module.exports =
     constructor: ->
       @request = request
 
-    send: (data) ->
-      params = app: 'atom'
-      _.extend(params, data)
+    send: (eventType, data) ->
+      params = timestamp: ((new Date().getTime()) / 1000)
+      params.dimensions = data
 
-      #@request
-      console.log
-        url: "https://haystack.githubapp.com/api"
-        qs: params
+      @request
+        method: 'POST'
+        url: "https://collector.githubapp.com/atom/#{eventType}"
+        headers:
+          'Content-Type' : 'application/vnd.github-octolytics+json'
+        body: JSON.stringify(params)

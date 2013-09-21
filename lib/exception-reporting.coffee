@@ -11,7 +11,7 @@ module.exports =
     if _.isFunction(window.onerror)
       @originalOnError = window.onerror
     window.onerror = (message, url, line) =>
-      @reporter.send(@collector.getDataForError(message, url, line))
+      @reporter.send('error', @collector.getDataForError(message, url, line))
       @originalOnError(arguments...)
 
   deactivate: ->
