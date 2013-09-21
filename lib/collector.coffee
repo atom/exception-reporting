@@ -1,5 +1,9 @@
 module.exports =
   class Collector
+    # Private:
+    getDevMode: ->
+      !!atom.getLoadSettings().devMode
+
     # Public: Returns an object containing all data collected for a specific
     # error.
     getDataForError: (message, url, line) ->
@@ -8,3 +12,4 @@ module.exports =
 
       data =
         backtrace: backtrace
+        devMode: @getDevMode()

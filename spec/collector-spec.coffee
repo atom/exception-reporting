@@ -10,3 +10,4 @@ describe "Collector", ->
     it "creates a request with the proper options", ->
       keys = _.keys(subject.getDataForError('error', 'file.coffee', 1))
       expect(keys).toContain 'backtrace'
+      expect(keys).toContain 'devMode'
