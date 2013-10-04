@@ -6,12 +6,15 @@ module.exports =
       @request = request
 
     send: (eventType, data) ->
-      params = timestamp: ((new Date().getTime()) / 1000)
-      params.dimensions = data
+      params =
+        timestamp: new Date().getTime() / 1000
+        dimensions: data
 
-      @request
+      requestOptions =
         method: 'POST'
         url: "https://collector.githubapp.com/atom/#{eventType}"
         headers:
           'Content-Type' : 'application/vnd.github-octolytics+json'
         body: JSON.stringify(params)
+
+      @request requestOptions, -> # Callback prevents errors from going to the console
