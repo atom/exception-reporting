@@ -1,7 +1,7 @@
 {
   "name": "exception-reporting",
   "main": "./lib/exception-reporting",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Sends debugging data when exceptions happen",
   "repository": {
     "type": "git",
