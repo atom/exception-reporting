@@ -11,3 +11,4 @@ describe "Collector", ->
       keys = _.keys(subject.getDataForError('error', 'file.coffee', 1))
       expect(keys).toContain 'backtrace'
       expect(keys).toContain 'devMode'
+      expect(keys).toContain 'user_agent'

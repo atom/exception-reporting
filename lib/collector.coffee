@@ -4,6 +4,10 @@ module.exports =
     getDevMode: ->
       !!atom.getLoadSettings().devMode
 
+    # Private
+    getUserAgent: ->
+      navigator.userAgent
+
     # Public: Returns an object containing all data collected for a specific
     # error.
     getDataForError: (message, url, line) ->
@@ -13,3 +17,4 @@ module.exports =
       data =
         backtrace: backtrace
         devMode: @getDevMode()
+        user_agent: @getUserAgent()
