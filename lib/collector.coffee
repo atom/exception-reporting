@@ -11,9 +11,9 @@ module.exports =
     # Public: Returns an object containing all data collected for a specific
     # error.
     getDataForError: (message, url, line) ->
+      message = message.substring(0, 5*1024)
       backtrace = "#{message}\n"
       backtrace += "at (#{url}:#{line})"
-      backtrace = backtrace.substring(0, 5*1024)
 
       data =
         backtrace: backtrace

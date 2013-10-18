@@ -15,5 +15,7 @@ describe "Collector", ->
 
     it "truncates large backtraces", ->
       largeString = Array(1024*5).join("a")
-      data = subject.getDataForError(largeString, 'file.coffee', 1)
-      expect(data.backtrace.length).toBe 5*1024
+      url = 'file.coffee'
+      line = 1
+      data = subject.getDataForError(largeString, url, line)
+      expect(data.backtrace.length).toBe (5*1024 + 6 + url.length + line.toString().length)
