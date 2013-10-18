@@ -13,6 +13,7 @@ module.exports =
     getDataForError: (message, url, line) ->
       backtrace = "#{message}\n"
       backtrace += "at (#{url}:#{line})"
+      backtrace = backtrace.substring(0, 5*1024)
 
       data =
         backtrace: backtrace
