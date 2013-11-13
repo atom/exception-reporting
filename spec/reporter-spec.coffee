@@ -2,7 +2,6 @@
 Reporter = require '../lib/reporter'
 
 describe "Reporter", ->
-  subject = null
   beforeEach ->
     spyOn(Reporter, 'request')
 
@@ -10,14 +9,15 @@ describe "Reporter", ->
     Reporter.send('message', 'file.coffee', 1)
     expect(Reporter.request).toHaveBeenCalled()
 
-    requestOptions = Reporter.request.calls[0].args[0]
-    expect(requestOptions.method).toBe 'POST'
-    expect(requestOptions.url).toBe 'https://collector.githubapp.com/atom/error'
-    expect(requestOptions.headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
+    requestArgs = Reporter.request.calls[0].args[0]
+    body = JSON.parse(requestArgs.body)
 
-    body = JSON.parse(requestOptions.body)
+    expect(requestArgs.method).toBe 'POST'
+    expect(requestArgs.url).toBe 'https://collector.githubapp.com/atom/error'
+    expect(requestArgs.headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
     expect(body.dimensions).toBeDefined()
     expect(body.context).toEqual {backtrace: 'message\nat (file.coffee:1)'}
+    expect(body.timestamp).toBeDefined()
 
   it "truncates large backtraces", ->
     largeString = Array(1024*6).join("a")

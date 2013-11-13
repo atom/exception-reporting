@@ -3,16 +3,11 @@ request = require 'request'
 module.exports =
   class Reporter
     @send: (message, url, line) ->
-      params = @buildParams(message, url, line)
-
-      requestOptions =
+      @request
         method: 'POST'
         url: "https://collector.githubapp.com/atom/error"
-        headers:
-          'Content-Type' : 'application/vnd.github-octolytics+json'
-        body: JSON.stringify(params)
-
-      @request requestOptions
+        headers: 'Content-Type' : 'application/vnd.github-octolytics+json'
+        body: JSON.stringify(@buildParams(message, url, line))
 
     @request: (options) ->
       request options, -> # Callback prevents errors from going to the console
