@@ -28,5 +28,6 @@ module.exports =
           backtrace: backtrace
         dimensions:
           actor_login: process.env.USER
+          user_agent: navigator.userAgent
           dev_mode: !!atom.getLoadSettings().devMode
           version: atom.getVersion()

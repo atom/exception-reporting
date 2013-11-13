@@ -16,7 +16,7 @@ describe "Reporter", ->
     expect(requestOptions.headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
 
     body = JSON.parse(requestOptions.body)
-    expect(Object.keys(body.dimensions)).toEqual ['actor_login', 'dev_mode', 'version']
+    expect(body.dimensions).toBeDefined()
     expect(body.context).toEqual {backtrace: 'message\nat (file.coffee:1)'}
 
   it "truncates large backtraces", ->
