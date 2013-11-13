@@ -1,17 +1,13 @@
 {_} = require 'atom'
 
-Collector = require './collector'
 Reporter = require './reporter'
 
 module.exports =
-  collector: new Collector()
-  reporter: new Reporter()
-
   activate: (state) ->
     if _.isFunction(window.onerror)
       @originalOnError = window.onerror
     window.onerror = (message, url, line) =>
-      @reporter.send('error', @collector.getDataForError(message, url, line))
+      Reporter.send(message, url, line)
       @originalOnError(arguments...)
 
   deactivate: ->
