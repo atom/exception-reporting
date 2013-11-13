@@ -8,7 +8,7 @@ module.exports =
     send: (eventType, data) ->
       params =
         timestamp: new Date().getTime() / 1000
-        dimensions: data
+        context: data
 
       requestOptions =
         method: 'POST'
