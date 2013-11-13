@@ -19,3 +19,4 @@ module.exports =
         backtrace: backtrace
         devMode: @getDevMode()
         user_agent: @getUserAgent()
+        actor_login: process.env.USER
