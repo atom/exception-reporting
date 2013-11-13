@@ -1,19 +1,28 @@
+{_} = require('atom')
 Reporter = require '../lib/reporter'
 
 describe "Reporter", ->
   subject = null
   beforeEach ->
-    subject = new Reporter
+    spyOn(Reporter, 'request')
 
-  describe "send", ->
-    beforeEach ->
-      spyOn(subject, 'request')
-      subject.send('event', key: 'value')
+  it "creates a request with the proper options", ->
+    Reporter.send('message', 'file.coffee', 1)
+    expect(Reporter.request).toHaveBeenCalled()
 
-    it "creates a request with the proper options", ->
-      expect(subject.request).toHaveBeenCalled()
-      expect(subject.request.calls[0].args[0].method).toBe 'POST'
-      expect(subject.request.calls[0].args[0].url).toBe 'https://collector.githubapp.com/atom/event'
-      expect(subject.request.calls[0].args[0].headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
-      expect(subject.request.calls[0].args[0].body).toContain '"dimensions":{"key":"value"}'
-      expect(subject.request.calls[0].args[0].body).toContain '"timestamp":'
+    requestOptions = Reporter.request.calls[0].args[0]
+    expect(requestOptions.method).toBe 'POST'
+    expect(requestOptions.url).toBe 'https://collector.githubapp.com/atom/error'
+    expect(requestOptions.headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
+
+    body = JSON.parse(requestOptions.body)
+    expect(Object.keys(body.dimensions)).toEqual ['actor_login', 'dev_mode', 'version']
+    expect(body.context).toEqual {backtrace: 'message\nat (file.coffee:1)'}
+
+  it "truncates large backtraces", ->
+    largeString = Array(1024*6).join("a")
+    Reporter.send(largeString, 'file.coffee', 1)
+
+    body = JSON.parse(Reporter.request.calls[0].args[0].body)
+    Reporter.send(largeString, 'file.coffee', 1)
+    expect(body.context.backtrace.length).toBeLessThan largeString.length
