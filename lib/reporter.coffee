@@ -19,7 +19,7 @@ class Reporter
     backtrace = "#{message}\nat (#{url}:#{line})"
 
     params =
-      timestamp: new Date().getTime() / 1000
+      timestamp: Date.now() / 1000
       context:
         backtrace: backtrace
       dimensions:
