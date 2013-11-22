@@ -11,7 +11,7 @@ module.exports =
       @originalOnError?(arguments...)
 
   deactivate: ->
-    if @originalOnError
+    if @originalOnError?
       window.onerror = @originalOnError
     else
       window.onerror = null
