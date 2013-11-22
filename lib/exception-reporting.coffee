@@ -8,7 +8,7 @@ module.exports =
       @originalOnError = window.onerror
     window.onerror = (message, url, line) =>
       Reporter.send(message, url, line)
-      @originalOnError(arguments...)
+      @originalOnError?(arguments...)
 
   deactivate: ->
     if @originalOnError
