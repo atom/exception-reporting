@@ -1,4 +1,4 @@
-request = require 'request'
+request = null # Defer require until error is actually sent
 
 module.exports =
 class Reporter
@@ -10,6 +10,7 @@ class Reporter
       body: JSON.stringify(@buildParams(message, url, line))
 
   @request: (options) ->
+    request ?= require 'request'
     request options, -> # Callback prevents errors from going to the console
 
   # Private:
