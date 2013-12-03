@@ -3,20 +3,11 @@
   "main": "./lib/exception-reporting",
   "version": "0.8.0",
   "description": "Sends debugging data when exceptions happen",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/atom/exception-reporting.git"
-  },
-  "bugs": {
-    "url": "https://github.com/atom/exception-reporting/issues"
-  },
+  "repository": "https://github.com/atom/exception-reporting",
   "engines": {
     "atom": ">25.0"
   },
   "dependencies": {
     "request": "2.27.0"
-  },
-  "publishConfig": {
-    "registry": "https://atom.cloudant.com/registry/_design/app/_rewrite"
   }
 }
