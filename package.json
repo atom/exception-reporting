@@ -8,6 +8,7 @@
     "atom": ">25.0"
   },
   "dependencies": {
+    "guid": "0.0.11",
     "request": "2.27.0"
   }
 }

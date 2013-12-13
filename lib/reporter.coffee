@@ -1,3 +1,6 @@
+os = require 'os'
+path = require 'path'
+
 request = null # Defer require until error is actually sent
 
 module.exports =
@@ -5,8 +8,8 @@ class Reporter
   @send: (message, url, line) ->
     @request
       method: 'POST'
-      url: "https://collector.githubapp.com/atom/error"
-      headers: 'Content-Type' : 'application/vnd.github-octolytics+json'
+      url: "https://notify.bugsnag.com"
+      headers: 'Content-Type' : 'application/json'
       body: JSON.stringify(@buildParams(message, url, line))
 
   @request: (options) ->
@@ -16,14 +19,37 @@ class Reporter
   # Private:
   @buildParams: (message, url, line) ->
     message = message.substring(0, 5*1024)
-    backtrace = "#{message}\nat (#{url}:#{line})"
+
+    if errorClass = message.split(':', 1)[0]
+      errorClass = errorClass.replace('Uncaught ', '')
+    else
+      errorClass = "UncaughtError"
+
+    context = path.basename(url)
+    releaseStage = if atom.isReleasedVersion() then 'production' else 'development'
 
     params =
-      timestamp: Date.now() / 1000
-      context:
-        backtrace: backtrace
-      dimensions:
-        actor_login: process.env.USER
-        user_agent: navigator.userAgent
-        dev_mode: !!atom.getLoadSettings().devMode
+      apiKey: '7ddca14cb60cbd1cd12d1b252473b076'
+      notifier:
+        name: 'Atom'
         version: atom.getVersion()
+        url: 'https://www.atom.io'
+      events: [
+        userId: atom.config.get('exception-reporting.userId')
+        appVersion: atom.getVersion()
+        osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
+        releaseStage: releaseStage
+        context: context
+        groupingHash: message
+        exceptions: [
+          errorClass: errorClass
+          message: message
+          stacktrace: [
+            file: url
+            method: 'N/A'
+            columnNumber: 0
+            lineNumber: line
+            inProject: true
+          ]
+        ]
+      ]
