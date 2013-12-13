@@ -27,7 +27,7 @@ class Reporter
       errorClass = "UncaughtError"
 
     releaseStage = if atom.isReleasedVersion() then 'production' else 'development'
-    {line, column, source} = coffeestack.convertLine(url, line, 0)
+    {line, column, source} = coffeestack.convertLine(url, line, 0) or {line: line, source: url, column: 0}
     context = path.basename(source)
 
     params =

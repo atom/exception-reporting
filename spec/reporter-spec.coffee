@@ -13,11 +13,13 @@ describe "Reporter", ->
     body = JSON.parse(requestArgs.body)
 
     expect(requestArgs.method).toBe 'POST'
-    expect(requestArgs.url).toBe 'https://collector.githubapp.com/atom/error'
-    expect(requestArgs.headers['Content-Type']).toBe 'application/vnd.github-octolytics+json'
-    expect(body.dimensions).toBeDefined()
-    expect(body.context).toEqual {backtrace: 'message\nat (file.coffee:1)'}
-    expect(body.timestamp).toBeDefined()
+    expect(requestArgs.url).toBe 'https://notify.bugsnag.com'
+    expect(requestArgs.headers['Content-Type']).toBe 'application/json'
+    expect(body.apiKey).toBeDefined()
+    expect(body.notifier).toBeDefined()
+    expect(body.events).toBeDefined()
+    expect(body.events[0].context).toEqual 'file.coffee'
+    expect(body.events[0].exceptions[0].message).toEqual 'message'
 
   it "truncates large backtraces", ->
     largeString = Array(1024*6).join("a")
@@ -25,4 +27,4 @@ describe "Reporter", ->
 
     body = JSON.parse(Reporter.request.calls[0].args[0].body)
     Reporter.send(largeString, 'file.coffee', 1)
-    expect(body.context.backtrace.length).toBeLessThan largeString.length
+    expect(body.events[0].exceptions[0].message.length).toBeLessThan largeString.length
