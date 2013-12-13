@@ -1,5 +1,6 @@
 os = require 'os'
 path = require 'path'
+coffeestack = require 'coffeestack'
 
 request = null # Defer require until error is actually sent
 
@@ -25,8 +26,9 @@ class Reporter
     else
       errorClass = "UncaughtError"
 
-    context = path.basename(url)
     releaseStage = if atom.isReleasedVersion() then 'production' else 'development'
+    {line, column, source} = coffeestack.convertLine(url, line, 0)
+    context = path.basename(source)
 
     params =
       apiKey: '7ddca14cb60cbd1cd12d1b252473b076'
@@ -45,9 +47,9 @@ class Reporter
           errorClass: errorClass
           message: message
           stacktrace: [
-            file: url
-            method: 'N/A'
-            columnNumber: 0
+            file: source
+            method: ' '
+            columnNumber: column
             lineNumber: line
             inProject: true
           ]
