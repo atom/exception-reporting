@@ -7,6 +7,7 @@ request = null # Defer require until error is actually sent
 module.exports =
 class Reporter
   @send: (message, url, line) ->
+    return unless @shouldSendErrorFromUrl(url)
     @request
       method: 'POST'
       url: "https://notify.bugsnag.com"
@@ -55,3 +56,7 @@ class Reporter
           ]
         ]
       ]
+
+  @shouldSendErrorFromUrl: (url) ->
+    resourcePath = atom.getLoadSettings().resourcePath
+    not atom.inDevMode() and url.indexOf(resourcePath) == 0
