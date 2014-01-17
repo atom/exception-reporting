@@ -14,7 +14,13 @@ describe "Reporter", ->
       filePath = path.join(atom.getLoadSettings().resourcePath, 'file.coffee')
 
     it "sends a request with the proper options", ->
-      Reporter.send('message', filePath, 1)
+      error =
+        stack: """
+          Error: whoops
+            at HTMLDivElement.<anonymous> (/Users/me/atom/node_modules/fuzzy-finder.coffee:10:15)
+            at HTMLDivElement.jQuery.event.dispatch (/Users/me/atom/node_modules/space-pen/vendor/jquery.js:4676:9)
+        """
+      Reporter.send('message', filePath, 1, 2, error)
       expect(Reporter.request).toHaveBeenCalled()
 
       requestArgs = Reporter.request.calls[0].args[0]
@@ -28,6 +34,23 @@ describe "Reporter", ->
       expect(body.events).toBeDefined()
       expect(body.events[0].context).toEqual 'file.coffee'
       expect(body.events[0].exceptions[0].message).toEqual 'message'
+      expect(body.events[0].exceptions[0].stacktrace).toEqual [
+        {
+          file: '/Users/me/atom/node_modules/fuzzy-finder.coffee'
+          method: '<anonymous>'
+          columnNumber: 15
+          lineNumber: 10
+          inProject: true
+        }
+        {
+          file: '/Users/me/atom/node_modules/space-pen/vendor/jquery.js'
+          method: 'jQuery.event.dispatch'
+          columnNumber: 9
+          lineNumber: 4676
+          inProject: true
+        }
+      ]
+
 
     it "truncates large backtraces", ->
       largeString = Array(1024*6).join("a")
