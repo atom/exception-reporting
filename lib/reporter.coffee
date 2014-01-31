@@ -10,7 +10,7 @@ class Reporter
     return unless @shouldSendErrorFromUrl(url)
     @request
       method: 'POST'
-      url: "https://notify.bugsnag.com"
+      url: 'https://notify.bugsnag.com'
       headers: 'Content-Type' : 'application/json'
       body: JSON.stringify(@buildParams(message, url, line, column, error))
 
@@ -66,5 +66,5 @@ class Reporter
       ]
 
   @shouldSendErrorFromUrl: (url) ->
-    resourcePath = atom.getLoadSettings().resourcePath
+    {resourcePath} = atom.getLoadSettings()
     not atom.inDevMode() and url.indexOf(resourcePath) == 0
