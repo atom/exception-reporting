@@ -1,7 +1,7 @@
 {
   "name": "exception-reporting",
   "main": "./lib/exception-reporting",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Sends debugging data when exceptions happen",
   "repository": "https://github.com/atom/exception-reporting",
   "engines": {
