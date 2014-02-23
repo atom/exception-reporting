@@ -4,7 +4,7 @@ Reporter = require '../lib/reporter'
 describe "Reporter", ->
   beforeEach ->
     spyOn(Reporter, 'request')
-    spyOn(atom, 'inDevMode').andReturn false # exceptions are never send if atom is in dev mode
+    spyOn(atom, 'inDevMode').andReturn false # exceptions are never sent if atom is in dev mode
 
   describe "when the exception is from atom core", ->
     filePath = null
