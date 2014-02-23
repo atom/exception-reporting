@@ -1,4 +1,3 @@
-{_} = require('atom')
 path = require 'path'
 Reporter = require '../lib/reporter'
 
