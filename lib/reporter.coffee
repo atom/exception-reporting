@@ -17,7 +17,6 @@ class Reporter
   @request: (options) ->
     request options, -> # Callback prevents errors from going to the console
 
-  # Private:
   @buildParams: (message, url, line, column, error) ->
     message = message.substring(0, 5*1024)
 
