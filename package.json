@@ -2,7 +2,7 @@
   "name": "exception-reporting",
   "main": "./lib/exception-reporting",
   "version": "0.14.0",
-  "description": "Sends debugging data when exceptions happen",
+  "description": "Reports uncaught Atom exceptions to bugsnag.com",
   "repository": "https://github.com/atom/exception-reporting",
   "license": "MIT",
   "engines": {
