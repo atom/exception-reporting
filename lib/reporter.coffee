@@ -62,6 +62,7 @@ class Reporter
         context: context
         groupingHash: message
         exceptions: [{errorClass, message, stacktrace}]
+        metaData: error?.metadata
       ]
 
   @shouldSendErrorFromUrl: (url) ->
