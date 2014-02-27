@@ -19,11 +19,11 @@ class Reporter
 
   @buildParams: (message, url, line, column, error) ->
     message = message.substring(0, 5*1024)
-
-    if errorClass = message.split(':', 1)[0]
-      errorClass = errorClass.replace('Uncaught ', '')
-    else
-      errorClass = "UncaughtError"
+    unless errorClass = error?.name
+      if errorClass = message.split(':', 1)[0]
+        errorClass = errorClass.replace('Uncaught ', '')
+      else
+        errorClass = "UncaughtError"
 
     releaseStage = if atom.isReleasedVersion() then 'production' else 'development'
     {line, column, source} = coffeestack.convertLine(url, line, column) ? {line, column, source: url}
