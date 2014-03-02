@@ -16,8 +16,8 @@ describe "Reporter", ->
       error =
         stack: """
           Error: whoops
-            at HTMLDivElement.<anonymous> (/Users/me/atom/node_modules/fuzzy-finder.coffee:10:15)
-            at HTMLDivElement.jQuery.event.dispatch (/Users/me/atom/node_modules/space-pen/vendor/jquery.js:4676:9)
+            at HTMLDivElement.<anonymous> (/Users/me/atom/Resources/app/fuzzy-finder.coffee:10:15)
+            at HTMLDivElement.jQuery.event.dispatch (/Users/me/atom/Resources/node_modules/space-pen/vendor/jquery.js:4676:9)
         """
       Reporter.send('message', filePath, 1, 2, error)
       expect(Reporter.request).toHaveBeenCalled()
@@ -35,18 +35,18 @@ describe "Reporter", ->
       expect(body.events[0].exceptions[0].message).toEqual 'message'
       expect(body.events[0].exceptions[0].stacktrace).toEqual [
         {
-          file: '/Users/me/atom/node_modules/fuzzy-finder.coffee'
+          file: 'app/fuzzy-finder.coffee'
           method: '<anonymous>'
           columnNumber: 15
           lineNumber: 10
           inProject: true
         }
         {
-          file: '/Users/me/atom/node_modules/space-pen/vendor/jquery.js'
+          file: 'node_modules/space-pen/vendor/jquery.js'
           method: 'jQuery.event.dispatch'
           columnNumber: 9
           lineNumber: 4676
-          inProject: true
+          inProject: false
         }
       ]
 
