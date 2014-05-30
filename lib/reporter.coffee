@@ -35,7 +35,7 @@ class Reporter
       for line in coffeestack.convertStackTrace(error.stack).split('\n')
         if match = atLinePattern.exec(line)
           stacktrace.push
-            file: match[3].replace(/(.*[\/\\]Resources[\/\\])/, '')
+            file: match[3].replace(/(.*[\/\\][rR]esources[\/\\])/, '')
             method: match[2].replace(/^(HTMLDocument|HTML[^\.]*Element|Object)\./, '')
             columnNumber: parseInt(match[5])
             lineNumber: parseInt(match[4])
