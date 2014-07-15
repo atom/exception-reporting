@@ -60,7 +60,6 @@ class Reporter
         osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
         releaseStage: releaseStage
         context: context
-        groupingHash: message
         exceptions: [{errorClass, message, stacktrace}]
         metaData: error?.metadata
       ]
