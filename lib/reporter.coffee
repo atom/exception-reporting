@@ -35,7 +35,7 @@ class Reporter
       for line in coffeestack.convertStackTrace(error.stack).split('\n')
         if match = atLinePattern.exec(line)
           stacktrace.push
-            file: match[3].replace(/(.*[\/\\][rR]esources[\/\\])/, '')
+            file: match[3].replace(///^#{atom.getLoadSettings().resourcePath}(\/|\\)///, '')
             method: match[2].replace(/^(HTMLDocument|HTML[^\.]*Element|Object)\./, '')
             columnNumber: parseInt(match[5])
             lineNumber: parseInt(match[4])
@@ -60,7 +60,6 @@ class Reporter
         osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
         releaseStage: releaseStage
         context: context
-        groupingHash: message
         exceptions: [{errorClass, message, stacktrace}]
         metaData: error?.metadata
       ]
