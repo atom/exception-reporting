@@ -35,11 +35,11 @@ class Reporter
       for line in coffeestack.convertStackTrace(error.stack).split('\n')
         if match = atLinePattern.exec(line)
           stacktrace.push
-            file: match[3].replace(///^#{atom.getLoadSettings().resourcePath}(\/|\\)///, '')
+            file: match[3].replace(///^#{atom.getLoadSettings().resourcePath}[\/\\]///i, '')
             method: match[2].replace(/^(HTMLDocument|HTML[^\.]*Element|Object)\./, '')
             columnNumber: parseInt(match[5])
             lineNumber: parseInt(match[4])
-            inProject: !/node_modules/.test(match[3])
+            inProject: not /node_modules/.test(match[3])
     else
       stacktrace.push
         file: source
