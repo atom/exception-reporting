@@ -1,6 +1,7 @@
 os = require 'os'
 path = require 'path'
 
+_ = require 'underscore-plus'
 coffeestack = require 'coffeestack'
 request = require 'request'
 
@@ -34,8 +35,9 @@ class Reporter
       atLinePattern = /^(\s+at (.*) )\((.*):(\d+):(\d+)\)/
       for line in coffeestack.convertStackTrace(error.stack).split('\n')
         if match = atLinePattern.exec(line)
+          resourcePath = _.escapeRegExp(atom.getLoadSettings().resourcePath)
           stacktrace.push
-            file: match[3].replace(///^#{atom.getLoadSettings().resourcePath}[\/\\]///i, '')
+            file: match[3].replace(///^#{resourcePath}[\/\\]///i, '')
             method: match[2].replace(/^(HTMLDocument|HTML[^\.]*Element|Object)\./, '')
             columnNumber: parseInt(match[5])
             lineNumber: parseInt(match[4])
