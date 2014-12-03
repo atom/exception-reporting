@@ -5,10 +5,10 @@ module.exports =
     unless atom.config.get('exception-reporting.userId')
       atom.config.set('exception-reporting.userId', require('guid').raw())
 
-    @uncaughtErrorSubscription = atom.on 'uncaught-error', (message, url, line, column, error) ->
+    @uncaughtErrorSubscription = atom.onDidThrowError ({message, url, line, column, originalError}) ->
       Reporter ?= require './reporter'
-      Reporter.send(message, url, line, column, error)
+      Reporter.send(message, url, line, column, originalError)
 
   deactivate: ->
-    @uncaughtErrorSubscription?.off()
+    @uncaughtErrorSubscription?.dispose()
     @uncaughtErrorSubscription = null
