@@ -1,6 +1,6 @@
 {
   "name": "exception-reporting",
-  "main": "./lib/exception-reporting",
+  "main": "./lib/main",
   "version": "0.20.0",
   "description": "Reports uncaught Atom exceptions to bugsnag.com",
   "repository": "https://github.com/atom/exception-reporting",
