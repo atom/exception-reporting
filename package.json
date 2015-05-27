@@ -13,5 +13,8 @@
     "request": "^2.33.0",
     "coffeestack": "^1",
     "underscore-plus": "1.x"
+  },
+  "devDependencies": {
+    "coffeelint": "^1.9.7"
   }
 }
