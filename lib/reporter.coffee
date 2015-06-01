@@ -12,7 +12,7 @@ class Reporter
     @request
       method: 'POST'
       url: 'https://notify.bugsnag.com'
-      headers: 'Content-Type' : 'application/json'
+      headers: 'Content-Type': 'application/json'
       body: JSON.stringify(@buildParams(message, url, line, column, error))
 
   @request: (options) ->
@@ -68,4 +68,4 @@ class Reporter
 
   @shouldSendErrorFromUrl: (url) ->
     {resourcePath} = atom.getLoadSettings()
-    not atom.inDevMode() and url.indexOf(resourcePath) == 0
+    not atom.inDevMode() and url.indexOf(resourcePath) is 0
