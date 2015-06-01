@@ -15,6 +15,6 @@
     "underscore-plus": "1.x"
   },
   "devDependencies": {
-    "coffeelint": "^1.9.7"
+    "coffeelint": "^1.10.0"
   }
 }
