@@ -22,7 +22,8 @@ describe "Reporter", ->
             at HTMLDivElement.<anonymous> (#{atom.config.resourcePath}/fuzzy-finder.coffee:10:15)
             at HTMLDivElement.jQuery.event.dispatch (#{atom.config.resourcePath}/node_modules/space-pen/vendor/jquery.js:4676:9)
         """
-      window.onerror('message', filePath, 1, 2, error)
+
+      Reporter.send('message', filePath, 1, 2, error)
       expect(Reporter.request).toHaveBeenCalled()
 
       requestArgs = Reporter.request.calls[0].args[0]
@@ -56,13 +57,13 @@ describe "Reporter", ->
 
     it "truncates large backtraces", ->
       largeString = Array(1024*6).join("a")
-      window.onerror(largeString, filePath, 1)
+      Reporter.send(largeString, filePath, 1)
 
       body = JSON.parse(Reporter.request.calls[0].args[0].body)
-      window.onerror(largeString, 'file.coffee', 1)
+      Reporter.send(largeString, 'file.coffee', 1)
       expect(body.events[0].exceptions[0].message.length).toBeLessThan largeString.length
 
   describe "when the exception is not from atom core", ->
     it "doesn't send a request with the proper options", ->
-      window.onerror('message', 'file.coffee', 1)
+      Reporter.send('message', 'file.coffee', 1)
       expect(Reporter.request).not.toHaveBeenCalled()
