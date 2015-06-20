@@ -77,3 +77,11 @@ exports.reportUncaughtException = (error) ->
   params.severity = "error"
   json = buildNotificationJSON(error, params)
   performRequest(json)
+
+exports.reportFailedAssertion = (error) ->
+  return unless shouldReport(error)
+
+  params = getDefaultNotificationParams()
+  params.severity = "warning"
+  json = buildNotificationJSON(error, params)
+  performRequest(json)

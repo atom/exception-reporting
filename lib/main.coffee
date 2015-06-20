@@ -1,18 +1,27 @@
+{CompositeDisposable} = require 'atom'
+
 Reporter = null
 NewReporter = null
 
 module.exports =
   activate: ->
+    @subscriptions = new CompositeDisposable
+
     unless atom.config.get('exception-reporting.userId')
       atom.config.set('exception-reporting.userId', require('guid').raw())
 
-    @uncaughtErrorSubscription = atom.onDidThrowError ({message, url, line, column, originalError}) ->
+    @subscriptions.add atom.onDidThrowError ({message, url, line, column, originalError}) ->
       Reporter ?= require './reporter'
       Reporter.send(message, url, line, column, originalError)
 
       NewReporter ?= require './new-reporter'
       NewReporter.reportUncaughtException(originalError)
 
+    if atom.onDidFailAssertion?
+      @subscriptions.add atom.onDidFailAssertion (error) ->
+        NewReporter ?= require './new-reporter'
+        NewReporter.reportFailedAssertion(error)
+
   deactivate: ->
-    @uncaughtErrorSubscription?.dispose()
-    @uncaughtErrorSubscription = null
+    @subscriptions?.dispose()
+    @subscriptions = null
