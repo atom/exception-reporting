@@ -1,4 +1,5 @@
 Reporter = null
+NewReporter = null
 
 module.exports =
   activate: ->
@@ -8,6 +9,9 @@ module.exports =
     @uncaughtErrorSubscription = atom.onDidThrowError ({message, url, line, column, originalError}) ->
       Reporter ?= require './reporter'
       Reporter.send(message, url, line, column, originalError)
+
+      NewReporter ?= require './new-reporter'
+      NewReporter.reportUncaughtException(originalError)
 
   deactivate: ->
     @uncaughtErrorSubscription?.dispose()
