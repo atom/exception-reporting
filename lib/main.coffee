@@ -14,13 +14,23 @@ module.exports =
       Reporter ?= require './reporter'
       Reporter.send(message, url, line, column, originalError)
 
-      NewReporter ?= require './new-reporter'
-      NewReporter.reportUncaughtException(originalError)
+      try
+        NewReporter ?= require './new-reporter'
+        NewReporter.reportUncaughtException(originalError)
+      catch secondaryException
+        try
+          console.error "Error reporting uncaught exception", secondaryException
+          NewReporter.reportUncaughtException(secondaryException)
 
     if atom.onDidFailAssertion?
       @subscriptions.add atom.onDidFailAssertion (error) ->
-        NewReporter ?= require './new-reporter'
-        NewReporter.reportFailedAssertion(error)
+        try
+          NewReporter ?= require './new-reporter'
+          NewReporter.reportFailedAssertion(error)
+        catch secondaryException
+          try
+            console.error "Error reporting assertion failure", secondaryException
+            NewReporter.reportUncaughtException(secondaryException)
 
   deactivate: ->
     @subscriptions?.dispose()
