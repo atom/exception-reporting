@@ -9,7 +9,6 @@
     "atom": ">0.48.0"
   },
   "dependencies": {
-    "bugsnag": "^1.6.5",
     "coffeestack": "^1",
     "guid": "0.0.11",
     "request": "^2.33.0",
