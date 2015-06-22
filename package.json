@@ -9,9 +9,9 @@
     "atom": ">0.48.0"
   },
   "dependencies": {
+    "coffeestack": "^1",
     "guid": "0.0.11",
     "request": "^2.33.0",
-    "coffeestack": "^1",
     "underscore-plus": "1.x"
   },
   "devDependencies": {
