@@ -24,52 +24,53 @@ describe "Reporter", ->
       Reporter.reportUncaughtException(error)
       [lineNumber, columnNumber] = error.stack.match(/.coffee:(\d+):(\d+)/)[1..].map (s) -> parseInt(s)
 
-      expect(requests).toEqual [
-        {
-          "method": "POST",
-          "url": "https://notify.bugsnag.com",
-          "headers": {
-            "Content-Type": "application/json"
-          },
-          "body": JSON.stringify({
-            "apiKey": Reporter.API_KEY
-            "notifier": {
-              "name": "Atom",
-              "version": atom.getVersion(),
-              "url": "https://www.atom.io"
-            },
-            "events": [
+      expect(requests.length).toBe 1
+      [request] = requests
+      expect(request.method).toBe "POST"
+      expect(request.url).toBe "https://notify.bugsnag.com"
+      expect(request.headers).toEqual {"Content-Type": "application/json"}
+      body = JSON.parse(request.body)
+
+      # asserting the correct path is difficult on CI. let's do 'close enough'.
+      expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
+      delete body.events[0].exceptions[0].stacktrace[0].file
+
+      expect(body).toEqual {
+        "apiKey": Reporter.API_KEY
+        "notifier": {
+          "name": "Atom",
+          "version": atom.getVersion(),
+          "url": "https://www.atom.io"
+        },
+        "events": [
+          {
+            "payloadVersion": "2",
+            "exceptions": [
               {
-                "payloadVersion": "2",
-                "exceptions": [
+                "errorClass": "Error",
+                "message": "",
+                "stacktrace": [
                   {
-                    "errorClass": "Error",
-                    "message": "",
-                    "stacktrace": [
-                      {
-                        "file": __filename,
-                        "method": "",
-                        "lineNumber": lineNumber,
-                        "columnNumber": columnNumber,
-                        "inProject": true
-                      }
-                    ]
+                    "method": "",
+                    "lineNumber": lineNumber,
+                    "columnNumber": columnNumber,
+                    "inProject": true
                   }
-                ],
-                "severity": "error",
-                "user": {},
-                "app": {
-                  "version": atom.getVersion(),
-                  "releaseStage": "development"
-                },
-                "device": {
-                  "osVersion": osVersion
-                }
+                ]
               }
-            ]
-          })
-        }
-      ]
+            ],
+            "severity": "error",
+            "user": {},
+            "app": {
+              "version": atom.getVersion(),
+              "releaseStage": "development"
+            },
+            "device": {
+              "osVersion": osVersion
+            }
+          }
+        ]
+      }
 
   describe ".reportFailedAssertion(error)", ->
     it "posts warnings to bugsnag", ->
@@ -78,49 +79,50 @@ describe "Reporter", ->
       Reporter.reportFailedAssertion(error)
       [lineNumber, columnNumber] = error.stack.match(/.coffee:(\d+):(\d+)/)[1..].map (s) -> parseInt(s)
 
-      expect(requests).toEqual [
-        {
-          "method": "POST",
-          "url": "https://notify.bugsnag.com",
-          "headers": {
-            "Content-Type": "application/json"
-          },
-          "body": JSON.stringify({
-            "apiKey": Reporter.API_KEY
-            "notifier": {
-              "name": "Atom",
-              "version": atom.getVersion(),
-              "url": "https://www.atom.io"
-            },
-            "events": [
+      expect(requests.length).toBe 1
+      [request] = requests
+      expect(request.method).toBe "POST"
+      expect(request.url).toBe "https://notify.bugsnag.com"
+      expect(request.headers).toEqual {"Content-Type": "application/json"}
+      body = JSON.parse(request.body)
+
+      # asserting the correct path is difficult on CI. let's do 'close enough'.
+      expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
+      delete body.events[0].exceptions[0].stacktrace[0].file
+
+      expect(body).toEqual {
+        "apiKey": Reporter.API_KEY
+        "notifier": {
+          "name": "Atom",
+          "version": atom.getVersion(),
+          "url": "https://www.atom.io"
+        },
+        "events": [
+          {
+            "payloadVersion": "2",
+            "exceptions": [
               {
-                "payloadVersion": "2",
-                "exceptions": [
+                "errorClass": "Error",
+                "message": "",
+                "stacktrace": [
                   {
-                    "errorClass": "Error",
-                    "message": "",
-                    "stacktrace": [
-                      {
-                        "file": __filename,
-                        "method": "",
-                        "lineNumber": lineNumber,
-                        "columnNumber": columnNumber,
-                        "inProject": true
-                      }
-                    ]
+                    "method": "",
+                    "lineNumber": lineNumber,
+                    "columnNumber": columnNumber,
+                    "inProject": true
                   }
-                ],
-                "severity": "warning",
-                "user": {},
-                "app": {
-                  "version": atom.getVersion(),
-                  "releaseStage": "development"
-                },
-                "device": {
-                  "osVersion": osVersion
-                }
+                ]
               }
-            ]
-          })
-        }
-      ]
+            ],
+            "severity": "warning",
+            "user": {},
+            "app": {
+              "version": atom.getVersion(),
+              "releaseStage": "development"
+            },
+            "device": {
+              "osVersion": osVersion
+            }
+          }
+        ]
+      }
