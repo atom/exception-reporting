@@ -34,6 +34,7 @@ describe "Reporter", ->
       # asserting the correct path is difficult on CI. let's do 'close enough'.
       expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
       delete body.events[0].exceptions[0].stacktrace[0].file
+      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual {
         "apiKey": Reporter.API_KEY
@@ -53,8 +54,7 @@ describe "Reporter", ->
                   {
                     "method": "",
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber,
-                    "inProject": true
+                    "columnNumber": columnNumber
                   }
                 ]
               }
@@ -89,6 +89,7 @@ describe "Reporter", ->
       # asserting the correct path is difficult on CI. let's do 'close enough'.
       expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
       delete body.events[0].exceptions[0].stacktrace[0].file
+      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual {
         "apiKey": Reporter.API_KEY
@@ -108,8 +109,7 @@ describe "Reporter", ->
                   {
                     "method": "",
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber,
-                    "inProject": true
+                    "columnNumber": columnNumber
                   }
                 ]
               }
