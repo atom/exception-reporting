@@ -42,7 +42,7 @@ buildStackTraceJSON = (error, projectRoot) ->
 getDefaultNotificationParams = ->
   userId: atom.config.get('exception-reporting.userId')
   appVersion: atom.getVersion()
-  releaseStage: if atom.isReleasedVersion() then 'x-production' else 'x-development'
+  releaseStage: if atom.isReleasedVersion() then 'production' else 'development'
   projectRoot: atom.getLoadSettings().resourcePath
   osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
