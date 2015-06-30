@@ -1,71 +1,87 @@
-os = require 'os'
-path = require 'path'
-
 _ = require 'underscore-plus'
-coffeestack = require 'coffeestack'
+os = require 'os'
 request = require 'request'
+stackTrace = require 'stack-trace'
 
-module.exports =
-class Reporter
-  @send: (message, url, line, column, error) ->
-    return unless @shouldSendErrorFromUrl(url)
-    @request
-      method: 'POST'
-      url: 'https://notify.bugsnag.com'
-      headers: 'Content-Type': 'application/json'
-      body: JSON.stringify(@buildParams(message, url, line, column, error))
+StackTraceCache = new WeakMap
 
-  @request: (options) ->
-    request options, -> # Callback prevents errors from going to the console
+buildNotificationJSON = (error, params) ->
+  apiKey: '7ddca14cb60cbd1cd12d1b252473b076'
+  notifier:
+    name: 'Atom'
+    version: params.appVersion
+    url: 'https://www.atom.io'
+  events: [{
+    payloadVersion: "2"
+    exceptions: [buildExceptionJSON(error, params.projectRoot)]
+    severity: params.severity
+    user:
+      id: params.userId
+    app:
+      version: params.appVersion
+      releaseStage: params.releaseStage
+    device:
+      osVersion: params.osVersion
+    metaData: error.metadata
+  }]
 
-  @buildParams: (message, url, line, column, error) ->
-    message = message.substring(0, 5*1024)
-    unless errorClass = error?.name
-      if errorClass = message.split(':', 1)[0]
-        errorClass = errorClass.replace('Uncaught ', '')
-      else
-        errorClass = "UncaughtError"
+buildExceptionJSON = (error, projectRoot) ->
+  errorClass: error.constructor.name
+  message: error.message
+  stacktrace: buildStackTraceJSON(error, projectRoot)
 
-    releaseStage = if atom.isReleasedVersion() then 'production' else 'development'
-    {line, column, source} = coffeestack.convertLine(url, line, column) ? {line, column, source: url}
-    context = path.basename(source)
+buildStackTraceJSON = (error, projectRoot) ->
+  projectRootRegex = ///^#{_.escapeRegExp(projectRoot)}[\/\\]///i
+  parseStackTrace(error).map (callSite) ->
+    file: callSite.getFileName().replace(projectRootRegex, '')
+    method: callSite.getMethodName() ? callSite.getFunctionName() ? "none"
+    lineNumber: callSite.getLineNumber()
+    columnNumber: callSite.getColumnNumber()
+    inProject: not /node_modules/.test(callSite.getFileName())
 
-    stacktrace = []
-    if error?.stack?
-      atLinePattern = /^(\s+at (.*) )\((.*):(\d+):(\d+)\)/
-      for line in coffeestack.convertStackTrace(error.stack).split('\n')
-        if match = atLinePattern.exec(line)
-          resourcePath = _.escapeRegExp(atom.getLoadSettings().resourcePath)
-          stacktrace.push
-            file: match[3].replace(///^#{resourcePath}[\/\\]///i, '')
-            method: match[2].replace(/^(HTMLDocument|HTML[^\.]*Element|Object)\./, '')
-            columnNumber: parseInt(match[5])
-            lineNumber: parseInt(match[4])
-            inProject: not /node_modules/.test(match[3])
-    else
-      stacktrace.push
-        file: source
-        method: ' '
-        columnNumber: column
-        lineNumber: line
-        inProject: true
+getDefaultNotificationParams = ->
+  userId: atom.config.get('exception-reporting.userId')
+  appVersion: atom.getVersion()
+  releaseStage: if atom.isReleasedVersion() then 'x-production' else 'x-development'
+  projectRoot: atom.getLoadSettings().resourcePath
+  osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
-    params =
-      apiKey: '7ddca14cb60cbd1cd12d1b252473b076'
-      notifier:
-        name: 'Atom'
-        version: atom.getVersion()
-        url: 'https://www.atom.io'
-      events: [
-        userId: atom.config.get('exception-reporting.userId')
-        appVersion: atom.getVersion()
-        osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
-        releaseStage: releaseStage
-        context: context
-        exceptions: [{errorClass, message, stacktrace}]
-        metaData: error?.metadata
-      ]
+performRequest = (json) ->
+  options =
+    method: 'POST'
+    url: 'https://notify.bugsnag.com'
+    headers: 'Content-Type': 'application/json'
+    body: JSON.stringify(json)
+  request options, -> # Empty callback prevents errors from going to the console
 
-  @shouldSendErrorFromUrl: (url) ->
-    {resourcePath} = atom.getLoadSettings()
-    not atom.inDevMode() and url.indexOf(resourcePath) is 0
+shouldReport = (error) ->
+  # return false if atom.inDevMode()
+  if topFrame = parseStackTrace(error)[0]
+    # only report exceptions that originate from the application bundle
+    topFrame.getFileName().indexOf(atom.getLoadSettings().resourcePath) is 0
+  else
+    false
+
+parseStackTrace = (error) ->
+  if callSites = StackTraceCache.get(error)
+    callSites
+  else
+    callSites = stackTrace.parse(error)
+    StackTraceCache.set(error, callSites)
+    callSites
+
+exports.reportUncaughtException = (error) ->
+  return unless shouldReport(error)
+
+  params = getDefaultNotificationParams()
+  params.severity = "error"
+  json = buildNotificationJSON(error, params)
+  performRequest(json)
+
+exports.reportFailedAssertion = (error) ->
+  return unless shouldReport(error)
+
+  params = getDefaultNotificationParams()
+  params.severity = "warning"
+  json = buildNotificationJSON(error, params)
+  performRequest(json)

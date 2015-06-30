@@ -1,7 +1,6 @@
 {CompositeDisposable} = require 'atom'
 
 Reporter = null
-NewReporter = null
 
 module.exports =
   activate: ->
@@ -11,26 +10,23 @@ module.exports =
       atom.config.set('exception-reporting.userId', require('guid').raw())
 
     @subscriptions.add atom.onDidThrowError ({message, url, line, column, originalError}) ->
-      Reporter ?= require './reporter'
-      Reporter.send(message, url, line, column, originalError)
-
       try
-        NewReporter ?= require './new-reporter'
-        NewReporter.reportUncaughtException(originalError)
+        Reporter ?= require './reporter'
+        Reporter.reportUncaughtException(originalError)
       catch secondaryException
         try
           console.error "Error reporting uncaught exception", secondaryException
-          NewReporter.reportUncaughtException(secondaryException)
+          Reporter.reportUncaughtException(secondaryException)
 
     if atom.onDidFailAssertion?
       @subscriptions.add atom.onDidFailAssertion (error) ->
         try
-          NewReporter ?= require './new-reporter'
-          NewReporter.reportFailedAssertion(error)
+          Reporter ?= require './reporter'
+          Reporter.reportFailedAssertion(error)
         catch secondaryException
           try
             console.error "Error reporting assertion failure", secondaryException
-            NewReporter.reportUncaughtException(secondaryException)
+            Reporter.reportUncaughtException(secondaryException)
 
   deactivate: ->
     @subscriptions?.dispose()
