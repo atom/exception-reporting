@@ -2,11 +2,12 @@ _ = require 'underscore-plus'
 os = require 'os'
 request = require 'request'
 stackTrace = require 'stack-trace'
+API_KEY = '7ddca14cb60cbd1cd12d1b252473b076'
 
 StackTraceCache = new WeakMap
 
 buildNotificationJSON = (error, params) ->
-  apiKey: '7ddca14cb60cbd1cd12d1b252473b076'
+  apiKey: API_KEY
   notifier:
     name: 'Atom'
     version: params.appVersion
@@ -55,6 +56,7 @@ performRequest = (json) ->
   request options, -> # Empty callback prevents errors from going to the console
 
 shouldReport = (error) ->
+  return true if exports.alwaysReport # Used in specs
   return false if atom.inDevMode()
 
   if topFrame = parseStackTrace(error)[0]
@@ -86,3 +88,9 @@ exports.reportFailedAssertion = (error) ->
   params.severity = "warning"
   json = buildNotificationJSON(error, params)
   performRequest(json)
+
+# Used in specs
+exports.setRequestFunction = (requestFunction) ->
+  request = requestFunction
+
+exports.API_KEY = API_KEY
