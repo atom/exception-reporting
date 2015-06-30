@@ -55,7 +55,8 @@ performRequest = (json) ->
   request options, -> # Empty callback prevents errors from going to the console
 
 shouldReport = (error) ->
-  # return false if atom.inDevMode()
+  return false if atom.inDevMode()
+
   if topFrame = parseStackTrace(error)[0]
     # only report exceptions that originate from the application bundle
     topFrame.getFileName().indexOf(atom.getLoadSettings().resourcePath) is 0
