@@ -47,7 +47,7 @@ describe "Reporter", ->
                     "message": "",
                     "stacktrace": [
                       {
-                        "file": "/Users/nathansobo/github/exception-reporting/spec/reporter-spec.coffee",
+                        "file": __filename,
                         "method": "",
                         "lineNumber": lineNumber,
                         "columnNumber": columnNumber,
@@ -101,7 +101,7 @@ describe "Reporter", ->
                     "message": "",
                     "stacktrace": [
                       {
-                        "file": "/Users/nathansobo/github/exception-reporting/spec/reporter-spec.coffee",
+                        "file": __filename,
                         "method": "",
                         "lineNumber": lineNumber,
                         "columnNumber": columnNumber,
