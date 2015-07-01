@@ -63,7 +63,7 @@ describe "Reporter", ->
             "user": {},
             "app": {
               "version": atom.getVersion(),
-              "releaseStage": "development"
+              "releaseStage": if atom.isReleasedVersion() then 'production' else 'development'
             },
             "device": {
               "osVersion": osVersion
@@ -118,7 +118,7 @@ describe "Reporter", ->
             "user": {},
             "app": {
               "version": atom.getVersion(),
-              "releaseStage": "development"
+              "releaseStage": if atom.isReleasedVersion() then 'production' else 'development'
             },
             "device": {
               "osVersion": osVersion
