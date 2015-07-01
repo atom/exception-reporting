@@ -74,29 +74,35 @@ parseStackTrace = (error) ->
     callSites
 
 requestPrivateMetadataConsent = (error) ->
-  atom.notifications.addInfo "The Atom team would like to collect the following information to resolve this error:",
+  reportWithoutPrivateMetadata = ->
+    dismissSubscription.dispose()
+    delete error.privateMetadata
+    delete error.privateMetadataDescription
+    exports.reportUncaughtException(error)
+    notification.dismiss()
+
+  reportWithPrivateMetadata = ->
+    error.metadata ?= {}
+    for key, value of error.privateMetadata
+      error.metadata[key] = value
+    reportWithoutPrivateMetadata()
+
+  notification = atom.notifications.addInfo "The Atom team would like to collect the following information to resolve this error:",
     detail: error.privateMetadataDescription
     description: "Are you willing to submit this information to a private server for debugging purposes?"
     dismissable: true
     buttons: [
       {
         text: "No"
-        onDidClick: ->
-          delete error.privateMetadata
-          delete error.privateMetadataDescription
-          exports.reportUncaughtException(error)
+        onDidClick: reportWithoutPrivateMetadata
       }
       {
         text: "Yes, Submit For Debugging"
-        onDidClick: =>
-          error.metadata ?= {}
-          for key, value of error.privateMetadata
-            error.metadata[key] = value
-          delete error.privateMetadata
-          delete error.privateMetadataDescription
-          exports.reportUncaughtException(error)
+        onDidClick: reportWithPrivateMetadata
       }
     ]
+
+  dismissSubscription = notification.onDidDismiss(reportWithoutPrivateMetadata)
 
 exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)

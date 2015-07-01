@@ -73,10 +73,11 @@ describe "Reporter", ->
       }
 
     describe "when the error object has `privateMetadata` and `privateMetadataDescription` fields", ->
-      error = null
+      [error, notification] = []
 
       beforeEach ->
-        spyOn(atom.notifications, 'addInfo')
+        atom.notifications.clear()
+        spyOn(atom.notifications, 'addInfo').andCallThrough()
 
         error = new Error
         Error.captureStackTrace(error)
@@ -91,6 +92,10 @@ describe "Reporter", ->
 
       it "submits the error with the private metadata if the user consents", ->
         Reporter.reportUncaughtException(error)
+
+        [notification] = atom.notifications.getNotifications()
+        spyOn(notification, 'dismiss')
+
         notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
         expect(notificationOptions.buttons[1].text).toMatch /Yes/
 
@@ -101,13 +106,34 @@ describe "Reporter", ->
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual {foo: "bar", baz: "quux"}
 
+        expect(notification.dismiss).toHaveBeenCalled()
+
       it "submits the error without the private metadata if the user does not consent", ->
         Reporter.reportUncaughtException(error)
+
+        [notification] = atom.notifications.getNotifications()
+        spyOn(notification, 'dismiss')
+
         notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
         expect(notificationOptions.buttons[0].text).toMatch /No/
 
         spyOn(Reporter, 'reportUncaughtException')
         notificationOptions.buttons[0].onDidClick()
+        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar"}
+
+        expect(notification.dismiss).toHaveBeenCalled()
+
+      it "submits the error without the private metadata if the user dismisses the notification", ->
+        Reporter.reportUncaughtException(error)
+
+        spyOn(Reporter, 'reportUncaughtException')
+
+        [notification] = atom.notifications.getNotifications()
+        notification.dismiss()
+
         expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
