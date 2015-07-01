@@ -72,6 +72,47 @@ describe "Reporter", ->
         ]
       }
 
+    describe "when the error object has `privateMetadata` and `privateMetadataDescription` fields", ->
+      error = null
+
+      beforeEach ->
+        spyOn(atom.notifications, 'addInfo')
+
+        error = new Error
+        Error.captureStackTrace(error)
+
+        error.metadata = {foo: "bar"}
+        error.privateMetadata = {baz: "quux"}
+        error.privateMetadataDescription = "The contents of baz"
+
+      it "posts a notification asking for consent", ->
+        Reporter.reportUncaughtException(error)
+        expect(atom.notifications.addInfo).toHaveBeenCalled()
+
+      it "submits the error with the private metadata if the user consents", ->
+        Reporter.reportUncaughtException(error)
+        notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
+        expect(notificationOptions.buttons[1].text).toMatch /Yes/
+
+        spyOn(Reporter, 'reportUncaughtException')
+        notificationOptions.buttons[1].onDidClick()
+        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar", baz: "quux"}
+
+      it "submits the error without the private metadata if the user does not consent", ->
+        Reporter.reportUncaughtException(error)
+        notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
+        expect(notificationOptions.buttons[0].text).toMatch /No/
+
+        spyOn(Reporter, 'reportUncaughtException')
+        notificationOptions.buttons[0].onDidClick()
+        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar"}
+
   describe ".reportFailedAssertion(error)", ->
     it "posts warnings to bugsnag", ->
       error = new Error

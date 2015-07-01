@@ -73,8 +73,37 @@ parseStackTrace = (error) ->
     StackTraceCache.set(error, callSites)
     callSites
 
+requestPrivateMetadataConsent = (error) ->
+  atom.notifications.addInfo "The Atom team would like to collect the following information to resolve this error:",
+    detail: error.privateMetadataDescription
+    description: "Are you willing to submit this information to a private server for debugging purposes?"
+    dismissable: true
+    buttons: [
+      {
+        text: "No"
+        onDidClick: ->
+          delete error.privateMetadata
+          delete error.privateMetadataDescription
+          exports.reportUncaughtException(error)
+      }
+      {
+        text: "Yes, Submit For Debugging"
+        onDidClick: =>
+          error.metadata ?= {}
+          for key, value of error.privateMetadata
+            error.metadata[key] = value
+          delete error.privateMetadata
+          delete error.privateMetadataDescription
+          exports.reportUncaughtException(error)
+      }
+    ]
+
 exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)
+
+  if error.privateMetadata? and error.privateMetadataDescription?
+    requestPrivateMetadataConsent(error)
+    return
 
   params = getDefaultNotificationParams()
   params.severity = "error"
