@@ -265,3 +265,26 @@ describe "Reporter", ->
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual {foo: "bar"}
+
+      it "only notifies the user once for a given 'privateMetadataRequestName'", ->
+        fakeStorage = {}
+        spyOn(global.localStorage, 'setItem').andCallFake (key, value) -> fakeStorage[key] = value
+        spyOn(global.localStorage, 'getItem').andCallFake (key) -> fakeStorage[key]
+
+        error.privateMetadataRequestName = 'foo'
+
+        Reporter.reportFailedAssertion(error)
+        expect(atom.notifications.addInfo).toHaveBeenCalled()
+        atom.notifications.addInfo.reset()
+
+        Reporter.reportFailedAssertion(error)
+        expect(atom.notifications.addInfo).not.toHaveBeenCalled()
+
+        error2 = new Error
+        Error.captureStackTrace(error2)
+        error2.privateMetadataDescription = 'Something about you'
+        error2.privateMetadata = {baz: 'quux'}
+        error2.privateMetadataRequestName = 'bar'
+
+        Reporter.reportFailedAssertion(error2)
+        expect(atom.notifications.addInfo).toHaveBeenCalled()

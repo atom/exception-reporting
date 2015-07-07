@@ -75,17 +75,22 @@ parseStackTrace = (error) ->
 
 requestPrivateMetadataConsent = (error, message, reportFn) ->
   reportWithoutPrivateMetadata = ->
-    dismissSubscription.dispose()
     delete error.privateMetadata
     delete error.privateMetadataDescription
     reportFn(error)
-    notification.dismiss()
+    notification?.dismiss()
 
   reportWithPrivateMetadata = ->
     error.metadata ?= {}
     for key, value of error.privateMetadata
       error.metadata[key] = value
     reportWithoutPrivateMetadata()
+
+  if name = error.privateMetadataRequestName
+    if localStorage.getItem("private-metadata-request:#{name}")
+      return reportWithoutPrivateMetadata(error)
+    else
+      localStorage.setItem("private-metadata-request:#{name}", true)
 
   notification = atom.notifications.addInfo message,
     detail: error.privateMetadataDescription
@@ -102,7 +107,7 @@ requestPrivateMetadataConsent = (error, message, reportFn) ->
       }
     ]
 
-  dismissSubscription = notification.onDidDismiss(reportWithoutPrivateMetadata)
+  notification.onDidDismiss(reportWithoutPrivateMetadata)
 
 exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)
