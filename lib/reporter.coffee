@@ -73,12 +73,12 @@ parseStackTrace = (error) ->
     StackTraceCache.set(error, callSites)
     callSites
 
-requestPrivateMetadataConsent = (error) ->
+requestPrivateMetadataConsent = (error, message, reportFn) ->
   reportWithoutPrivateMetadata = ->
     dismissSubscription.dispose()
     delete error.privateMetadata
     delete error.privateMetadataDescription
-    exports.reportUncaughtException(error)
+    reportFn(error)
     notification.dismiss()
 
   reportWithPrivateMetadata = ->
@@ -87,7 +87,7 @@ requestPrivateMetadataConsent = (error) ->
       error.metadata[key] = value
     reportWithoutPrivateMetadata()
 
-  notification = atom.notifications.addInfo "The Atom team would like to collect the following information to resolve this error:",
+  notification = atom.notifications.addInfo message,
     detail: error.privateMetadataDescription
     description: "Are you willing to submit this information to a private server for debugging purposes?"
     dismissable: true
@@ -108,7 +108,8 @@ exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)
 
   if error.privateMetadata? and error.privateMetadataDescription?
-    requestPrivateMetadataConsent(error)
+    message = "The Atom team would like to collect the following information to resolve this error:"
+    requestPrivateMetadataConsent(error, message, exports.reportUncaughtException)
     return
 
   params = getDefaultNotificationParams()
@@ -118,6 +119,11 @@ exports.reportUncaughtException = (error) ->
 
 exports.reportFailedAssertion = (error) ->
   return unless shouldReport(error)
+
+  if error.privateMetadata? and error.privateMetadataDescription?
+    message = "The Atom team would like to collect some information to resolve an unexpected condition:"
+    requestPrivateMetadataConsent(error, message, exports.reportFailedAssertion)
+    return
 
   params = getDefaultNotificationParams()
   params.severity = "warning"

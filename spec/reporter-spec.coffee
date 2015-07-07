@@ -91,7 +91,9 @@ describe "Reporter", ->
         expect(atom.notifications.addInfo).toHaveBeenCalled()
 
       it "submits the error with the private metadata if the user consents", ->
+        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
         Reporter.reportUncaughtException(error)
+        Reporter.reportUncaughtException.reset()
 
         [notification] = atom.notifications.getNotifications()
         spyOn(notification, 'dismiss')
@@ -99,7 +101,6 @@ describe "Reporter", ->
         notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
         expect(notificationOptions.buttons[1].text).toMatch /Yes/
 
-        spyOn(Reporter, 'reportUncaughtException')
         notificationOptions.buttons[1].onDidClick()
         expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
         expect(error.privateMetadata).toBeUndefined()
@@ -109,7 +110,9 @@ describe "Reporter", ->
         expect(notification.dismiss).toHaveBeenCalled()
 
       it "submits the error without the private metadata if the user does not consent", ->
+        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
         Reporter.reportUncaughtException(error)
+        Reporter.reportUncaughtException.reset()
 
         [notification] = atom.notifications.getNotifications()
         spyOn(notification, 'dismiss')
@@ -117,7 +120,6 @@ describe "Reporter", ->
         notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
         expect(notificationOptions.buttons[0].text).toMatch /No/
 
-        spyOn(Reporter, 'reportUncaughtException')
         notificationOptions.buttons[0].onDidClick()
         expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
         expect(error.privateMetadata).toBeUndefined()
@@ -127,9 +129,9 @@ describe "Reporter", ->
         expect(notification.dismiss).toHaveBeenCalled()
 
       it "submits the error without the private metadata if the user dismisses the notification", ->
+        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
         Reporter.reportUncaughtException(error)
-
-        spyOn(Reporter, 'reportUncaughtException')
+        Reporter.reportUncaughtException.reset()
 
         [notification] = atom.notifications.getNotifications()
         notification.dismiss()
@@ -193,3 +195,73 @@ describe "Reporter", ->
           }
         ]
       }
+
+    describe "when the error object has `privateMetadata` and `privateMetadataDescription` fields", ->
+      [error, notification] = []
+
+      beforeEach ->
+        atom.notifications.clear()
+        spyOn(atom.notifications, 'addInfo').andCallThrough()
+
+        error = new Error
+        Error.captureStackTrace(error)
+
+        error.metadata = {foo: "bar"}
+        error.privateMetadata = {baz: "quux"}
+        error.privateMetadataDescription = "The contents of baz"
+
+      it "posts a notification asking for consent", ->
+        Reporter.reportFailedAssertion(error)
+        expect(atom.notifications.addInfo).toHaveBeenCalled()
+
+      it "submits the error with the private metadata if the user consents", ->
+        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
+        Reporter.reportFailedAssertion(error)
+        Reporter.reportFailedAssertion.reset()
+
+        [notification] = atom.notifications.getNotifications()
+        spyOn(notification, 'dismiss')
+
+        notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
+        expect(notificationOptions.buttons[1].text).toMatch /Yes/
+
+        notificationOptions.buttons[1].onDidClick()
+        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar", baz: "quux"}
+
+        expect(notification.dismiss).toHaveBeenCalled()
+
+      it "submits the error without the private metadata if the user does not consent", ->
+        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
+        Reporter.reportFailedAssertion(error)
+        Reporter.reportFailedAssertion.reset()
+
+        [notification] = atom.notifications.getNotifications()
+        spyOn(notification, 'dismiss')
+
+        notificationOptions = atom.notifications.addInfo.argsForCall[0][1]
+        expect(notificationOptions.buttons[0].text).toMatch /No/
+
+        notificationOptions.buttons[0].onDidClick()
+        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar"}
+
+        expect(notification.dismiss).toHaveBeenCalled()
+
+      it "submits the error without the private metadata if the user dismisses the notification", ->
+        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
+        Reporter.reportFailedAssertion(error)
+        Reporter.reportFailedAssertion.reset()
+
+
+        [notification] = atom.notifications.getNotifications()
+        notification.dismiss()
+
+        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(error.privateMetadata).toBeUndefined()
+        expect(error.privateMetadataDescription).toBeUndefined()
+        expect(error.metadata).toEqual {foo: "bar"}
