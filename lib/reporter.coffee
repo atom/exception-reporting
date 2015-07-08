@@ -62,7 +62,7 @@ shouldReport = (error) ->
 
   if topFrame = parseStackTrace(error)[0]
     # only report exceptions that originate from the application bundle
-    topFrame.getFileName().indexOf(atom.getLoadSettings().resourcePath) is 0
+    topFrame.getFileName()?.indexOf(atom.getLoadSettings().resourcePath) is 0
   else
     false
 
