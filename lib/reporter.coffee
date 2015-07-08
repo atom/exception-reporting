@@ -56,6 +56,7 @@ performRequest = (json) ->
   request options, -> # Empty callback prevents errors from going to the console
 
 shouldReport = (error) ->
+  return true if global.alwaysReportToBugsnag # Used to test reports in dev mode
   return true if exports.alwaysReport # Used in specs
   return false if atom.inDevMode()
 
