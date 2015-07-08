@@ -75,6 +75,7 @@ parseStackTrace = (error) ->
 
 requestPrivateMetadataConsent = (error, message, reportFn) ->
   reportWithoutPrivateMetadata = ->
+    dismissSubscription?.dispose()
     delete error.privateMetadata
     delete error.privateMetadataDescription
     reportFn(error)
@@ -107,7 +108,7 @@ requestPrivateMetadataConsent = (error, message, reportFn) ->
       }
     ]
 
-  notification.onDidDismiss(reportWithoutPrivateMetadata)
+  dismissSubscription = notification.onDidDismiss(reportWithoutPrivateMetadata)
 
 exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)
