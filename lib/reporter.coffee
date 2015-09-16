@@ -34,7 +34,7 @@ buildExceptionJSON = (error, projectRoot) ->
 buildStackTraceJSON = (error, projectRoot) ->
   projectRootRegex = ///^#{_.escapeRegExp(projectRoot)}[\/\\]///i
   parseStackTrace(error).map (callSite) ->
-    file: callSite.getFileName().replace(projectRootRegex, '')
+    file: callSite.getFileName().replace(projectRootRegex, '').replace(/\\/g, "/")
     method: callSite.getMethodName() ? callSite.getFunctionName() ? "none"
     lineNumber: callSite.getLineNumber()
     columnNumber: callSite.getColumnNumber()

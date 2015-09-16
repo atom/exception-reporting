@@ -33,6 +33,7 @@ describe "Reporter", ->
 
       # asserting the correct path is difficult on CI. let's do 'close enough'.
       expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
+      expect(body.events[0].exceptions[0].stacktrace[0].file).not.toMatch /\\/
       delete body.events[0].exceptions[0].stacktrace[0].file
       delete body.events[0].exceptions[0].stacktrace[0].inProject
 
@@ -158,6 +159,7 @@ describe "Reporter", ->
 
       # asserting the correct path is difficult on CI. let's do 'close enough'.
       expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch /reporter-spec/
+      expect(body.events[0].exceptions[0].stacktrace[0].file).not.toMatch /\\/
       delete body.events[0].exceptions[0].stacktrace[0].file
       delete body.events[0].exceptions[0].stacktrace[0].inProject
 
