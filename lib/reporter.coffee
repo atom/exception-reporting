@@ -3,6 +3,7 @@ os = require 'os'
 request = require 'request'
 stackTrace = require 'stack-trace'
 API_KEY = '7ddca14cb60cbd1cd12d1b252473b076'
+LIB_VERSION = require('../package.json')['version']
 
 StackTraceCache = new WeakMap
 
@@ -10,7 +11,7 @@ buildNotificationJSON = (error, params) ->
   apiKey: API_KEY
   notifier:
     name: 'Atom'
-    version: params.appVersion
+    version: LIB_VERSION
     url: 'https://www.atom.io'
   events: [{
     payloadVersion: "2"
@@ -142,3 +143,4 @@ exports.setRequestFunction = (requestFunction) ->
   request = requestFunction
 
 exports.API_KEY = API_KEY
+exports.LIB_VERSION = LIB_VERSION
