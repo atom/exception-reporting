@@ -41,7 +41,7 @@ describe "Reporter", ->
         "apiKey": Reporter.API_KEY
         "notifier": {
           "name": "Atom",
-          "version": atom.getVersion(),
+          "version": Reporter.LIB_VERSION,
           "url": "https://www.atom.io"
         },
         "events": [
@@ -167,7 +167,7 @@ describe "Reporter", ->
         "apiKey": Reporter.API_KEY
         "notifier": {
           "name": "Atom",
-          "version": atom.getVersion(),
+          "version": Reporter.LIB_VERSION,
           "url": "https://www.atom.io"
         },
         "events": [
