@@ -2,6 +2,12 @@ Reporter = require '../lib/reporter'
 os = require 'os'
 osVersion = "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
+# TODO: Remove me after Electron 0.37 is on stable
+if parseFloat(process.versions.electron) >= 0.37
+  method = ".<anonymous>"
+else
+  method = ""
+
 describe "Reporter", ->
   [requests, initialStackTraceLimit] = []
 
@@ -53,7 +59,7 @@ describe "Reporter", ->
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": "",
+                    "method": method,
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
@@ -179,7 +185,7 @@ describe "Reporter", ->
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": "",
+                    "method": method,
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
