@@ -11,7 +11,6 @@
   "dependencies": {
     "coffeestack": "^1",
     "guid": "0.0.11",
-    "request": "^2.33.0",
     "stack-trace": "0.0.9",
     "underscore-plus": "1.x"
   },

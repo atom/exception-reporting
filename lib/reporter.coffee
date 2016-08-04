@@ -1,10 +1,10 @@
 _ = require 'underscore-plus'
 os = require 'os'
-request = require 'request'
 stackTrace = require 'stack-trace'
 API_KEY = '7ddca14cb60cbd1cd12d1b252473b076'
 LIB_VERSION = require('../package.json')['version']
 
+request = window.fetch
 StackTraceCache = new WeakMap
 
 buildNotificationJSON = (error, params) ->
@@ -49,12 +49,11 @@ getDefaultNotificationParams = ->
   osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
 performRequest = (json) ->
-  options =
+  request('https://notify.bugsnag.com', {
     method: 'POST'
-    url: 'https://notify.bugsnag.com'
-    headers: 'Content-Type': 'application/json'
+    headers: new Headers({'Content-Type': 'application/json'})
     body: JSON.stringify(json)
-  request options, -> # Empty callback prevents errors from going to the console
+  })
 
 shouldReport = (error) ->
   return true if global.alwaysReportToBugsnag # Used to test reports in dev mode

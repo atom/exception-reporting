@@ -17,7 +17,7 @@ describe "Reporter", ->
     initialStackTraceLimit = Error.stackTraceLimit
     Error.stackTraceLimit = 1
 
-    Reporter.setRequestFunction (request) -> requests.push(request)
+    Reporter.setRequestFunction (url, options) -> requests.push(Object.assign({url}, options))
     Reporter.alwaysReport = true
 
   afterEach ->
@@ -34,7 +34,7 @@ describe "Reporter", ->
       [request] = requests
       expect(request.method).toBe "POST"
       expect(request.url).toBe "https://notify.bugsnag.com"
-      expect(request.headers).toEqual {"Content-Type": "application/json"}
+      expect(request.headers.get("Content-Type")).toBe "application/json"
       body = JSON.parse(request.body)
 
       # asserting the correct path is difficult on CI. let's do 'close enough'.
@@ -160,7 +160,7 @@ describe "Reporter", ->
       [request] = requests
       expect(request.method).toBe "POST"
       expect(request.url).toBe "https://notify.bugsnag.com"
-      expect(request.headers).toEqual {"Content-Type": "application/json"}
+      expect(request.headers.get("Content-Type")).toBe "application/json"
       body = JSON.parse(request.body)
 
       # asserting the correct path is difficult on CI. let's do 'close enough'.
