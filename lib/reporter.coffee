@@ -2,10 +2,7 @@ _ = require 'underscore-plus'
 os = require 'os'
 stackTrace = require 'stack-trace'
 API_KEY = '7ddca14cb60cbd1cd12d1b252473b076'
-
-# TODO: Replace with the following when we stop deleting package.json for bundled packages. Sorry world.
-# LIB_VERSION = require('../package.json')['version']
-LIB_VERSION = '0.38.3'
+LIB_VERSION = require('../package.json')['version']
 
 request = window.fetch
 StackTraceCache = new WeakMap
