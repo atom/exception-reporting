@@ -56,9 +56,8 @@ performRequest = (json) ->
   })
 
 shouldReport = (error) ->
-  return false unless atom.config.get('core.telemetryConsent') is 'limited'
-  return true if global.alwaysReportToBugsnag # Used to test reports in dev mode
   return true if exports.alwaysReport # Used in specs
+  return false unless atom.config.get('core.telemetryConsent') is 'limited'
   return false if atom.inDevMode()
 
   if topFrame = parseStackTrace(error)[0]
