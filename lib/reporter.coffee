@@ -111,8 +111,25 @@ requestPrivateMetadataConsent = (error, message, reportFn) ->
 
   dismissSubscription = notification.onDidDismiss(reportWithoutPrivateMetadata)
 
+addPackageMetadata = (error) ->
+  activePackages = atom.packages.getActivePackages()
+  if activePackages.length > 0
+    userPackages = {}
+    bundledPackages = {}
+    for pack in atom.packages.getActivePackages()
+      if /\/app\.asar\//.test(pack.path)
+        bundledPackages[pack.name] = pack.metadata.version
+      else
+        userPackages[pack.name] = pack.metadata.version
+
+    error.metadata ?= {}
+    error.metadata.bundledPackages = bundledPackages
+    error.metadata.userPackages = userPackages
+
 exports.reportUncaughtException = (error) ->
   return unless shouldReport(error)
+
+  addPackageMetadata(error)
 
   if error.privateMetadata? and error.privateMetadataDescription?
     message = "The Atom team would like to collect the following information to resolve this error:"
@@ -126,6 +143,8 @@ exports.reportUncaughtException = (error) ->
 
 exports.reportFailedAssertion = (error) ->
   return unless shouldReport(error)
+
+  addPackageMetadata(error)
 
   if error.privateMetadata? and error.privateMetadataDescription?
     message = "The Atom team would like to collect some information to resolve an unexpected condition:"

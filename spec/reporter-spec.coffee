@@ -9,10 +9,12 @@ else
   method = ""
 
 describe "Reporter", ->
-  [requests, initialStackTraceLimit] = []
+  [requests, initialStackTraceLimit, mockActivePackages] = []
 
   beforeEach ->
     requests = []
+    mockActivePackages = []
+    spyOn(atom.packages, 'getActivePackages').andCallFake -> mockActivePackages
 
     initialStackTraceLimit = Error.stackTraceLimit
     Error.stackTraceLimit = 1
@@ -148,6 +150,27 @@ describe "Reporter", ->
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual {foo: "bar"}
+
+    it "adds bundled and user packages to the error's metadata", ->
+      mockActivePackages = [
+        {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
+        {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
+        {name: 'bundled-1', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-1', metadata: {version: '1.0.0'}},
+        {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
+      ]
+
+      error = new Error
+      Error.captureStackTrace(error)
+      Reporter.reportUncaughtException(error)
+
+      expect(error.metadata.userPackages).toEqual({
+        'user-1': '1.0.0',
+        'user-2': '1.2.0'
+      })
+      expect(error.metadata.bundledPackages).toEqual({
+        'bundled-1': '1.0.0',
+        'bundled-2': '1.2.0'
+      })
 
   describe ".reportFailedAssertion(error)", ->
     it "posts warnings to bugsnag", ->
@@ -297,3 +320,24 @@ describe "Reporter", ->
 
         Reporter.reportFailedAssertion(error2)
         expect(atom.notifications.addInfo).toHaveBeenCalled()
+
+    it "adds bundled and user packages to the error's metadata", ->
+      mockActivePackages = [
+        {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
+        {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
+        {name: 'bundled-1', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-1', metadata: {version: '1.0.0'}},
+        {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
+      ]
+
+      error = new Error
+      Error.captureStackTrace(error)
+      Reporter.reportFailedAssertion(error)
+
+      expect(error.metadata.userPackages).toEqual({
+        'user-1': '1.0.0',
+        'user-2': '1.2.0'
+      })
+      expect(error.metadata.bundledPackages).toEqual({
+        'bundled-1': '1.0.0',
+        'bundled-2': '1.2.0'
+      })
