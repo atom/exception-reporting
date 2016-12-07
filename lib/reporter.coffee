@@ -48,7 +48,7 @@ getDefaultNotificationParams = ->
   projectRoot: atom.getLoadSettings().resourcePath
   osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
-getReleaseChannel = (version)  ->
+getReleaseChannel = (version) ->
   if version.indexOf('beta') > -1
     'beta'
   else if version.indexOf('dev') > -1

@@ -2,12 +2,6 @@ Reporter = require '../lib/reporter'
 os = require 'os'
 osVersion = "#{os.platform()}-#{os.arch()}-#{os.release()}"
 
-# TODO: Remove me after Electron 0.37 is on stable
-if parseFloat(process.versions.electron) >= 0.37
-  method = ".<anonymous>"
-else
-  method = ""
-
 getReleaseChannel = (version) ->
   if version.indexOf('beta') > -1
     'beta'
@@ -69,7 +63,7 @@ describe "Reporter", ->
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": method,
+                    "method": ".<anonymous>",
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
@@ -216,7 +210,7 @@ describe "Reporter", ->
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": method,
+                    "method": ".<anonymous>",
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
