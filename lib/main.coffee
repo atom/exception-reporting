@@ -7,7 +7,7 @@ module.exports =
     @subscriptions = new CompositeDisposable
 
     unless atom.config.get('exception-reporting.userId')
-      atom.config.set('exception-reporting.userId', require('guid').raw())
+      atom.config.set('exception-reporting.userId', require('node-uuid').v4())
 
     @subscriptions.add atom.onDidThrowError ({message, url, line, column, originalError}) ->
       try
