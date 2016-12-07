@@ -44,9 +44,17 @@ buildStackTraceJSON = (error, projectRoot) ->
 getDefaultNotificationParams = ->
   userId: atom.config.get('exception-reporting.userId')
   appVersion: atom.getVersion()
-  releaseStage: if atom.isReleasedVersion() then 'production' else 'development'
+  releaseStage: getReleaseChannel(atom.getVersion())
   projectRoot: atom.getLoadSettings().resourcePath
   osVersion: "#{os.platform()}-#{os.arch()}-#{os.release()}"
+
+getReleaseChannel = (version)  ->
+  if version.indexOf('beta') > -1
+    'beta'
+  else if version.indexOf('dev') > -1
+    'dev'
+  else
+    'stable'
 
 performRequest = (json) ->
   request('https://notify.bugsnag.com', {

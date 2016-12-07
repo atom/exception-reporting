@@ -8,6 +8,14 @@ if parseFloat(process.versions.electron) >= 0.37
 else
   method = ""
 
+getReleaseChannel = (version) ->
+  if version.indexOf('beta') > -1
+    'beta'
+  else if version.indexOf('dev') > -1
+    'dev'
+  else
+    'stable'
+
 describe "Reporter", ->
   [requests, initialStackTraceLimit, mockActivePackages] = []
 
@@ -72,7 +80,7 @@ describe "Reporter", ->
             "user": {},
             "app": {
               "version": atom.getVersion(),
-              "releaseStage": if atom.isReleasedVersion() then 'production' else 'development'
+              "releaseStage": getReleaseChannel(atom.getVersion())
             },
             "device": {
               "osVersion": osVersion
@@ -219,7 +227,7 @@ describe "Reporter", ->
             "user": {},
             "app": {
               "version": atom.getVersion(),
-              "releaseStage": if atom.isReleasedVersion() then 'production' else 'development'
+              "releaseStage": getReleaseChannel(atom.getVersion())
             },
             "device": {
               "osVersion": osVersion
