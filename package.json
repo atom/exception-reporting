@@ -9,12 +9,8 @@
     "atom": ">0.48.0"
   },
   "dependencies": {
-    "coffeestack": "^1",
-    "guid": "0.0.12",
+    "node-uuid": "~1.4.7",
     "stack-trace": "0.0.9",
     "underscore-plus": "1.x"
-  },
-  "devDependencies": {
-    "coffeelint": "^1.10.0"
   }
 }
