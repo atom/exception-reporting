@@ -18,7 +18,8 @@ describe("Reporter", () => {
   beforeEach(() => {
     reporter = new Reporter({
       request: (url, options) => requests.push(Object.assign({url}, options)),
-      alwaysReport: true
+      alwaysReport: true,
+      reportPreviousErrors: false
     })
     requests = []
     mockActivePackages = []
@@ -181,6 +182,26 @@ describe("Reporter", () => {
         'bundled-1': '1.0.0',
         'bundled-2': '1.2.0'
       })
+    })
+
+    it('adds previous error messages and assertion failures to the reported metadata', () => {
+      reporter.reportPreviousErrors = true
+
+      reporter.reportUncaughtException(new Error('A'))
+      reporter.reportUncaughtException(new Error('B'))
+      reporter.reportFailedAssertion(new Error('X'))
+      reporter.reportFailedAssertion(new Error('Y'))
+
+      reporter.reportUncaughtException(new Error('C'))
+
+      expect(requests.length).toBe(5)
+
+      const lastRequest = requests[requests.length - 1]
+      const body = JSON.parse(lastRequest.body)
+
+      console.log(body);
+      expect(body.events[0].metaData.previousErrors).toEqual(['A', 'B'])
+      expect(body.events[0].metaData.previousAssertionFailures).toEqual(['X', 'Y'])
     })
   })
 
@@ -360,6 +381,26 @@ describe("Reporter", () => {
         'bundled-1': '1.0.0',
         'bundled-2': '1.2.0'
       })
+    })
+
+    it('adds previous error messages and assertion failures to the reported metadata', () => {
+      reporter.reportPreviousErrors = true
+
+      reporter.reportUncaughtException(new Error('A'))
+      reporter.reportUncaughtException(new Error('B'))
+      reporter.reportFailedAssertion(new Error('X'))
+      reporter.reportFailedAssertion(new Error('Y'))
+
+      reporter.reportFailedAssertion(new Error('C'))
+
+      expect(requests.length).toBe(5)
+
+      const lastRequest = requests[requests.length - 1]
+      const body = JSON.parse(lastRequest.body)
+
+      console.log(body);
+      expect(body.events[0].metaData.previousErrors).toEqual(['A', 'B'])
+      expect(body.events[0].metaData.previousAssertionFailures).toEqual(['X', 'Y'])
     })
   })
 })
