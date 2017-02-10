@@ -13,9 +13,14 @@ let getReleaseChannel = version => {
 }
 
 describe("Reporter", () => {
-  let [requests, initialStackTraceLimit, mockActivePackages] = []
+  let reporter, requests, initialStackTraceLimit, mockActivePackages
 
   beforeEach(() => {
+    reporter = new Reporter({
+      request: (url, options) => requests.push(Object.assign({url}, options)),
+      alwaysReport: true,
+      reportPreviousErrors: false
+    })
     requests = []
     mockActivePackages = []
     spyOn(atom.packages, 'getActivePackages').andCallFake(() => mockActivePackages)
@@ -23,8 +28,6 @@ describe("Reporter", () => {
     initialStackTraceLimit = Error.stackTraceLimit
     Error.stackTraceLimit = 1
 
-    Reporter.setRequestFunction((url, options) => requests.push(Object.assign({url}, options)))
-    Reporter.alwaysReport = true
   })
 
   afterEach(() => Error.stackTraceLimit = initialStackTraceLimit)
@@ -33,7 +36,7 @@ describe("Reporter", () => {
     it("posts errors to bugsnag", () => {
       let error = new Error()
       Error.captureStackTrace(error)
-      Reporter.reportUncaughtException(error)
+      reporter.reportUncaughtException(error)
       let [lineNumber, columnNumber] = error.stack.match(/.js:(\d+):(\d+)/).slice(1).map(s => parseInt(s))
 
       expect(requests.length).toBe(1)
@@ -101,14 +104,14 @@ describe("Reporter", () => {
       })
 
       it("posts a notification asking for consent", () => {
-        Reporter.reportUncaughtException(error)
+        reporter.reportUncaughtException(error)
         expect(atom.notifications.addInfo).toHaveBeenCalled()
       })
 
       it("submits the error with the private metadata if the user consents", () => {
-        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
-        Reporter.reportUncaughtException(error)
-        Reporter.reportUncaughtException.reset()
+        spyOn(reporter, 'reportUncaughtException').andCallThrough()
+        reporter.reportUncaughtException(error)
+        reporter.reportUncaughtException.reset()
 
         notification = atom.notifications.getNotifications()[0]
 
@@ -116,8 +119,8 @@ describe("Reporter", () => {
         expect(notificationOptions.buttons[1].text).toMatch(/Yes/)
 
         notificationOptions.buttons[1].onDidClick()
-        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
-        expect(Reporter.reportUncaughtException.callCount).toBe(1)
+        expect(reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(reporter.reportUncaughtException.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar", baz: "quux"})
@@ -126,9 +129,9 @@ describe("Reporter", () => {
       })
 
       it("submits the error without the private metadata if the user does not consent", () => {
-        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
-        Reporter.reportUncaughtException(error)
-        Reporter.reportUncaughtException.reset()
+        spyOn(reporter, 'reportUncaughtException').andCallThrough()
+        reporter.reportUncaughtException(error)
+        reporter.reportUncaughtException.reset()
 
         notification = atom.notifications.getNotifications()[0]
 
@@ -136,8 +139,8 @@ describe("Reporter", () => {
         expect(notificationOptions.buttons[0].text).toMatch(/No/)
 
         notificationOptions.buttons[0].onDidClick()
-        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
-        expect(Reporter.reportUncaughtException.callCount).toBe(1)
+        expect(reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(reporter.reportUncaughtException.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"})
@@ -146,15 +149,15 @@ describe("Reporter", () => {
       })
 
       it("submits the error without the private metadata if the user dismisses the notification", () => {
-        spyOn(Reporter, 'reportUncaughtException').andCallThrough()
-        Reporter.reportUncaughtException(error)
-        Reporter.reportUncaughtException.reset()
+        spyOn(reporter, 'reportUncaughtException').andCallThrough()
+        reporter.reportUncaughtException(error)
+        reporter.reportUncaughtException.reset()
 
         notification = atom.notifications.getNotifications()[0]
         notification.dismiss()
 
-        expect(Reporter.reportUncaughtException).toHaveBeenCalledWith(error)
-        expect(Reporter.reportUncaughtException.callCount).toBe(1)
+        expect(reporter.reportUncaughtException).toHaveBeenCalledWith(error)
+        expect(reporter.reportUncaughtException.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"});});})
@@ -169,7 +172,7 @@ describe("Reporter", () => {
 
       let error = new Error()
       Error.captureStackTrace(error)
-      Reporter.reportUncaughtException(error)
+      reporter.reportUncaughtException(error)
 
       expect(error.metadata.userPackages).toEqual({
         'user-1': '1.0.0',
@@ -180,13 +183,33 @@ describe("Reporter", () => {
         'bundled-2': '1.2.0'
       })
     })
+
+    it('adds previous error messages and assertion failures to the reported metadata', () => {
+      reporter.reportPreviousErrors = true
+
+      reporter.reportUncaughtException(new Error('A'))
+      reporter.reportUncaughtException(new Error('B'))
+      reporter.reportFailedAssertion(new Error('X'))
+      reporter.reportFailedAssertion(new Error('Y'))
+
+      reporter.reportUncaughtException(new Error('C'))
+
+      expect(requests.length).toBe(5)
+
+      const lastRequest = requests[requests.length - 1]
+      const body = JSON.parse(lastRequest.body)
+
+      console.log(body);
+      expect(body.events[0].metaData.previousErrors).toEqual(['A', 'B'])
+      expect(body.events[0].metaData.previousAssertionFailures).toEqual(['X', 'Y'])
+    })
   })
 
   describe(".reportFailedAssertion(error)", () => {
     it("posts warnings to bugsnag", () => {
       let error = new Error()
       Error.captureStackTrace(error)
-      Reporter.reportFailedAssertion(error)
+      reporter.reportFailedAssertion(error)
       let [lineNumber, columnNumber] = error.stack.match(/.js:(\d+):(\d+)/).slice(1).map(s => parseInt(s))
 
       expect(requests.length).toBe(1)
@@ -254,14 +277,14 @@ describe("Reporter", () => {
       })
 
       it("posts a notification asking for consent", () => {
-        Reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion(error)
         expect(atom.notifications.addInfo).toHaveBeenCalled()
       })
 
       it("submits the error with the private metadata if the user consents", () => {
-        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
-        Reporter.reportFailedAssertion(error)
-        Reporter.reportFailedAssertion.reset()
+        spyOn(reporter, 'reportFailedAssertion').andCallThrough()
+        reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion.reset()
 
         notification = atom.notifications.getNotifications()[0]
 
@@ -269,8 +292,8 @@ describe("Reporter", () => {
         expect(notificationOptions.buttons[1].text).toMatch(/Yes/)
 
         notificationOptions.buttons[1].onDidClick()
-        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
-        expect(Reporter.reportFailedAssertion.callCount).toBe(1)
+        expect(reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(reporter.reportFailedAssertion.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar", baz: "quux"})
@@ -279,9 +302,9 @@ describe("Reporter", () => {
       })
 
       it("submits the error without the private metadata if the user does not consent", () => {
-        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
-        Reporter.reportFailedAssertion(error)
-        Reporter.reportFailedAssertion.reset()
+        spyOn(reporter, 'reportFailedAssertion').andCallThrough()
+        reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion.reset()
 
         notification = atom.notifications.getNotifications()[0]
 
@@ -289,8 +312,8 @@ describe("Reporter", () => {
         expect(notificationOptions.buttons[0].text).toMatch(/No/)
 
         notificationOptions.buttons[0].onDidClick()
-        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
-        expect(Reporter.reportFailedAssertion.callCount).toBe(1)
+        expect(reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(reporter.reportFailedAssertion.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"})
@@ -299,15 +322,15 @@ describe("Reporter", () => {
       })
 
       it("submits the error without the private metadata if the user dismisses the notification", () => {
-        spyOn(Reporter, 'reportFailedAssertion').andCallThrough()
-        Reporter.reportFailedAssertion(error)
-        Reporter.reportFailedAssertion.reset()
+        spyOn(reporter, 'reportFailedAssertion').andCallThrough()
+        reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion.reset()
 
         notification = atom.notifications.getNotifications()[0]
         notification.dismiss()
 
-        expect(Reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
-        expect(Reporter.reportFailedAssertion.callCount).toBe(1)
+        expect(reporter.reportFailedAssertion).toHaveBeenCalledWith(error)
+        expect(reporter.reportFailedAssertion.callCount).toBe(1)
         expect(error.privateMetadata).toBeUndefined()
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"})
@@ -320,11 +343,11 @@ describe("Reporter", () => {
 
         error.privateMetadataRequestName = 'foo'
 
-        Reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion(error)
         expect(atom.notifications.addInfo).toHaveBeenCalled()
         atom.notifications.addInfo.reset()
 
-        Reporter.reportFailedAssertion(error)
+        reporter.reportFailedAssertion(error)
         expect(atom.notifications.addInfo).not.toHaveBeenCalled()
 
         let error2 = new Error()
@@ -333,7 +356,7 @@ describe("Reporter", () => {
         error2.privateMetadata = {baz: 'quux'}
         error2.privateMetadataRequestName = 'bar'
 
-        Reporter.reportFailedAssertion(error2)
+        reporter.reportFailedAssertion(error2)
         expect(atom.notifications.addInfo).toHaveBeenCalled()
       })
     })
@@ -348,7 +371,7 @@ describe("Reporter", () => {
 
       let error = new Error()
       Error.captureStackTrace(error)
-      Reporter.reportFailedAssertion(error)
+      reporter.reportFailedAssertion(error)
 
       expect(error.metadata.userPackages).toEqual({
         'user-1': '1.0.0',
@@ -358,6 +381,26 @@ describe("Reporter", () => {
         'bundled-1': '1.0.0',
         'bundled-2': '1.2.0'
       })
+    })
+
+    it('adds previous error messages and assertion failures to the reported metadata', () => {
+      reporter.reportPreviousErrors = true
+
+      reporter.reportUncaughtException(new Error('A'))
+      reporter.reportUncaughtException(new Error('B'))
+      reporter.reportFailedAssertion(new Error('X'))
+      reporter.reportFailedAssertion(new Error('Y'))
+
+      reporter.reportFailedAssertion(new Error('C'))
+
+      expect(requests.length).toBe(5)
+
+      const lastRequest = requests[requests.length - 1]
+      const body = JSON.parse(lastRequest.body)
+
+      console.log(body);
+      expect(body.events[0].metaData.previousErrors).toEqual(['A', 'B'])
+      expect(body.events[0].metaData.previousAssertionFailures).toEqual(['X', 'Y'])
     })
   })
 })
