@@ -1,7 +1,5 @@
-/** @babel */
-
-import Reporter from '../lib/reporter'
-import os from 'os'
+const Reporter = require('../lib/reporter')
+const os = require('os')
 let osVersion = `${os.platform()}-${os.arch()}-${os.release()}`
 
 let getReleaseChannel = version => {
@@ -68,7 +66,7 @@ describe("Reporter", () => {
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": ".<anonymous>",
+                    "method": "it",
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
@@ -241,7 +239,7 @@ describe("Reporter", () => {
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": ".<anonymous>",
+                    "method": "it",
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
