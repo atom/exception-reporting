@@ -1,4 +1,5 @@
 const Reporter = require('../lib/reporter')
+const semver = require('semver')
 const os = require('os')
 let osVersion = `${os.platform()}-${os.arch()}-${os.release()}`
 
@@ -66,7 +67,7 @@ describe("Reporter", () => {
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": "it",
+                    "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
@@ -239,7 +240,7 @@ describe("Reporter", () => {
                 "message": "",
                 "stacktrace": [
                   {
-                    "method": "it",
+                    "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber
                   }
