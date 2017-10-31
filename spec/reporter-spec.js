@@ -161,13 +161,17 @@ describe("Reporter", () => {
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"});});})
 
-    it("adds bundled and user packages to the error's metadata", () => {
+    it('treats packages located in atom.packages.getPackageDirPaths as user packages', () => {
       mockActivePackages = [
         {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
         {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
         {name: 'bundled-1', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-1', metadata: {version: '1.0.0'}},
         {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
       ]
+
+      const packageDirPaths = ['/Users/user/.atom/packages']
+
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
@@ -360,13 +364,17 @@ describe("Reporter", () => {
       })
     })
 
-    it("adds bundled and user packages to the error's metadata", () => {
+    it('treats packages located in atom.packages.getPackageDirPaths as user packages', () => {
       mockActivePackages = [
         {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
         {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
         {name: 'bundled-1', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-1', metadata: {version: '1.0.0'}},
         {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
       ]
+
+      const packageDirPaths = ['/Users/user/.atom/packages']
+
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
