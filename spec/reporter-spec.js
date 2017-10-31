@@ -177,7 +177,7 @@ describe("Reporter", () => {
       const packageDirPaths = ['/Users/user/.atom/packages']
 
       spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andCallFake(() => packageDirPaths)
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
@@ -209,7 +209,7 @@ describe("Reporter", () => {
       const packageDirPaths = ['/Users/user/.atom/packages']
 
       spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andCallFake(() => packageDirPaths)
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
@@ -418,7 +418,7 @@ describe("Reporter", () => {
       const packageDirPaths = ['/Users/user/.atom/packages']
 
       spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andCallFake(() => packageDirPaths)
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
@@ -450,7 +450,7 @@ describe("Reporter", () => {
       const packageDirPaths = ['/Users/user/.atom/packages']
 
       spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andCallFake(() => packageDirPaths)
+      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
       Error.captureStackTrace(error)
