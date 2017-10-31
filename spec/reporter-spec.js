@@ -161,7 +161,7 @@ describe("Reporter", () => {
         expect(error.privateMetadataDescription).toBeUndefined()
         expect(error.metadata).toEqual({foo: "bar"});});})
 
-    it("adds bundled and user packages to the error's metadata", () => {
+    it('treats packages located in atom.packages.getPackageDirPaths as user packages', () => {
       mockActivePackages = [
         {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
         {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
@@ -169,14 +169,8 @@ describe("Reporter", () => {
         {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
       ]
 
-      const bundledPackages = [
-        'bundled-1',
-        'bundled-2'
-      ]
-
       const packageDirPaths = ['/Users/user/.atom/packages']
 
-      spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
       spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
@@ -189,38 +183,6 @@ describe("Reporter", () => {
       })
       expect(error.metadata.bundledPackages).toEqual({
         'bundled-1': '1.0.0',
-        'bundled-2': '1.2.0'
-      })
-    })
-
-    it("adds manually installed bundled packages to the error's userPackages metadata", () => {
-      mockActivePackages = [
-        {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
-        {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
-        {name: 'bundled-1', path: '/Users/user/.atom/packages/bundled-1', metadata: {version: '1.2.0'}},
-        {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
-      ]
-
-      const bundledPackages = [
-        'bundled-1',
-        'bundled-2'
-      ]
-
-      const packageDirPaths = ['/Users/user/.atom/packages']
-
-      spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
-
-      let error = new Error()
-      Error.captureStackTrace(error)
-      reporter.reportUncaughtException(error)
-
-      expect(error.metadata.userPackages).toEqual({
-        'user-1': '1.0.0',
-        'user-2': '1.2.0',
-        'bundled-1': '1.2.0'
-      })
-      expect(error.metadata.bundledPackages).toEqual({
         'bundled-2': '1.2.0'
       })
     })
@@ -402,7 +364,7 @@ describe("Reporter", () => {
       })
     })
 
-    it("adds bundled and user packages to the error's metadata", () => {
+    it('treats packages located in atom.packages.getPackageDirPaths as user packages', () => {
       mockActivePackages = [
         {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
         {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
@@ -410,14 +372,8 @@ describe("Reporter", () => {
         {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
       ]
 
-      const bundledPackages = [
-        'bundled-1',
-        'bundled-2'
-      ]
-
       const packageDirPaths = ['/Users/user/.atom/packages']
 
-      spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
       spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
 
       let error = new Error()
@@ -431,38 +387,6 @@ describe("Reporter", () => {
       expect(error.metadata.bundledPackages).toEqual({
         'bundled-1': '1.0.0',
         'bundled-2': '1.2.0'
-      })
-    })
-
-    it("adds manually installed bundled packages to the error's userPackages metadata", () => {
-      mockActivePackages = [
-        {name: 'user-1', path: '/Users/user/.atom/packages/user-1', metadata: {version: '1.0.0'}},
-        {name: 'user-2', path: '/Users/user/.atom/packages/user-2', metadata: {version: '1.2.0'}},
-        {name: 'bundled-1', path: '/Users/user/.atom/packages/bundled-1', metadata: {version: '1.2.0'}},
-        {name: 'bundled-2', path: '/Applications/Atom.app/Contents/Resources/app.asar/node_modules/bundled-2', metadata: {version: '1.2.0'}},
-      ]
-
-      const bundledPackages = [
-        'bundled-1',
-        'bundled-2'
-      ]
-
-      const packageDirPaths = ['/Users/user/.atom/packages']
-
-      spyOn(atom.packages, 'isBundledPackage').andCallFake((name) => bundledPackages.includes(name))
-      spyOn(atom.packages, 'getPackageDirPaths').andReturn(packageDirPaths)
-
-      let error = new Error()
-      Error.captureStackTrace(error)
-      reporter.reportFailedAssertion(error)
-
-      expect(error.metadata.userPackages).toEqual({
-        'user-1': '1.0.0',
-        'user-2': '1.2.0',
-        'bundled-1': '1.2.0'
-      })
-      expect(error.metadata.bundledPackages).toEqual({
-        'bundled-2': '1.2.0',
       })
     })
 
