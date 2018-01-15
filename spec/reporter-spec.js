@@ -123,7 +123,7 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
-                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)),
+                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)).replace(/\\/g, '/'),
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber,
                     "inProject": true
@@ -296,7 +296,7 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
-                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)),
+                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)).replace(/\\/g, '/'),
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber,
                     "inProject": true
