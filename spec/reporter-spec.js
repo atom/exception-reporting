@@ -1,6 +1,8 @@
 const Reporter = require('../lib/reporter')
 const semver = require('semver')
 const os = require('os')
+const path = require('path')
+const fs = require('fs-plus')
 let osVersion = `${os.platform()}-${os.arch()}-${os.release()}`
 
 let getReleaseChannel = version => {
@@ -32,7 +34,15 @@ describe("Reporter", () => {
   afterEach(() => Error.stackTraceLimit = initialStackTraceLimit)
 
   describe(".reportUncaughtException(error)", () => {
-    it("posts errors to bugsnag", () => {
+    it("posts errors originated inside Atom Core to BugSnag", () => {
+      const repositoryRootPath = path.join(__dirname, '..')
+      reporter = new Reporter({
+        request: (url, options) => requests.push(Object.assign({url}, options)),
+        alwaysReport: true,
+        reportPreviousErrors: false,
+        resourcePath: repositoryRootPath
+      })
+
       let error = new Error()
       Error.captureStackTrace(error)
       reporter.reportUncaughtException(error)
@@ -44,12 +54,6 @@ describe("Reporter", () => {
       expect(request.url).toBe("https://notify.bugsnag.com")
       expect(request.headers.get("Content-Type")).toBe("application/json")
       let body = JSON.parse(request.body)
-
-      // asserting the correct path is difficult on CI. let's do 'close enough'.
-      expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch(/reporter-spec/)
-      expect(body.events[0].exceptions[0].stacktrace[0].file).not.toMatch(/\\/)
-      delete body.events[0].exceptions[0].stacktrace[0].file
-      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual({
         "apiKey": Reporter.API_KEY,
@@ -68,8 +72,61 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
+                    "file": "spec/reporter-spec.js",
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber
+                    "columnNumber": columnNumber,
+                    "inProject": true
+                  }
+                ]
+              }
+            ],
+            "severity": "error",
+            "user": {},
+            "app": {
+              "version": atom.getVersion(),
+              "releaseStage": getReleaseChannel(atom.getVersion())
+            },
+            "device": {
+              "osVersion": osVersion
+            }
+          }
+        ]
+      });})
+
+    it("posts errors originated outside Atom Core to BugSnag", () => {
+      let error = new Error()
+      Error.captureStackTrace(error)
+      reporter.reportUncaughtException(error)
+      let [lineNumber, columnNumber] = error.stack.match(/.js:(\d+):(\d+)/).slice(1).map(s => parseInt(s))
+
+      expect(requests.length).toBe(1)
+      let [request] = requests
+      expect(request.method).toBe("POST")
+      expect(request.url).toBe("https://notify.bugsnag.com")
+      expect(request.headers.get("Content-Type")).toBe("application/json")
+      let body = JSON.parse(request.body)
+
+      expect(body).toEqual({
+        "apiKey": Reporter.API_KEY,
+        "notifier": {
+          "name": "Atom",
+          "version": Reporter.LIB_VERSION,
+          "url": "https://www.atom.io"
+        },
+        "events": [
+          {
+            "payloadVersion": "2",
+            "exceptions": [
+              {
+                "errorClass": "Error",
+                "message": "",
+                "stacktrace": [
+                  {
+                    "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
+                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)),
+                    "lineNumber": lineNumber,
+                    "columnNumber": columnNumber,
+                    "inProject": true
                   }
                 ]
               }
@@ -222,12 +279,6 @@ describe("Reporter", () => {
       expect(request.headers.get("Content-Type")).toBe("application/json")
       let body = JSON.parse(request.body)
 
-      // asserting the correct path is difficult on CI. let's do 'close enough'.
-      expect(body.events[0].exceptions[0].stacktrace[0].file).toMatch(/reporter-spec/)
-      expect(body.events[0].exceptions[0].stacktrace[0].file).not.toMatch(/\\/)
-      delete body.events[0].exceptions[0].stacktrace[0].file
-      delete body.events[0].exceptions[0].stacktrace[0].inProject
-
       expect(body).toEqual({
         "apiKey": Reporter.API_KEY,
         "notifier": {
@@ -245,8 +296,10 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
+                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)),
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber
+                    "columnNumber": columnNumber,
+                    "inProject": true
                   }
                 ]
               }
