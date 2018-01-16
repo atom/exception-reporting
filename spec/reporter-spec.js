@@ -458,7 +458,6 @@ describe("Reporter", () => {
       const lastRequest = requests[requests.length - 1]
       const body = JSON.parse(lastRequest.body)
 
-      console.log(body);
       expect(body.events[0].metaData.previousErrors).toEqual(['A', 'B'])
       expect(body.events[0].metaData.previousAssertionFailures).toEqual(['X', 'Y'])
     })
