@@ -14,7 +14,7 @@ let getReleaseChannel = version => {
 }
 
 describe("Reporter", () => {
-  let reporter, requests, initialStackTraceLimit, mockActivePackages
+  let reporter, requests, initialStackTraceLimit, initialFsGetHomeDirectory, mockActivePackages
 
   beforeEach(() => {
     reporter = new Reporter({
@@ -29,9 +29,13 @@ describe("Reporter", () => {
     initialStackTraceLimit = Error.stackTraceLimit
     Error.stackTraceLimit = 1
 
+    initialFsGetHomeDirectory = fs.getHomeDirectory
   })
 
-  afterEach(() => Error.stackTraceLimit = initialStackTraceLimit)
+  afterEach(() => {
+    fs.getHomeDirectory = initialFsGetHomeDirectory
+    Error.stackTraceLimit = initialStackTraceLimit
+  })
 
   describe(".reportUncaughtException(error)", () => {
     it("posts errors originated inside Atom Core to BugSnag", () => {
@@ -94,6 +98,8 @@ describe("Reporter", () => {
       });})
 
     it("posts errors originated outside Atom Core to BugSnag", () => {
+      fs.getHomeDirectory = () => path.join(__dirname, '..', '..')
+
       let error = new Error()
       Error.captureStackTrace(error)
       reporter.reportUncaughtException(error)
@@ -123,7 +129,7 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
-                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)).replace(/\\/g, '/'),
+                    "file": '~/exception-reporting/spec/reporter-spec.js',
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber,
                     "inProject": true
@@ -267,6 +273,8 @@ describe("Reporter", () => {
 
   describe(".reportFailedAssertion(error)", () => {
     it("posts warnings to bugsnag", () => {
+      fs.getHomeDirectory = () => path.join(__dirname, '..', '..')
+
       let error = new Error()
       Error.captureStackTrace(error)
       reporter.reportFailedAssertion(error)
@@ -296,7 +304,7 @@ describe("Reporter", () => {
                 "stacktrace": [
                   {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
-                    "file": path.join('~', path.relative(fs.getHomeDirectory(), __filename)).replace(/\\/g, '/'),
+                    "file": '~/exception-reporting/spec/reporter-spec.js',
                     "lineNumber": lineNumber,
                     "columnNumber": columnNumber,
                     "inProject": true
