@@ -58,6 +58,9 @@ describe("Reporter", () => {
       expect(request.url).toBe("https://notify.bugsnag.com")
       expect(request.headers.get("Content-Type")).toBe("application/json")
       let body = JSON.parse(request.body)
+      // Delete `inProject` field because tests may fail when run as part of Atom core
+      // (i.e. when this test file will be located under `node_modules/exception-reporting/spec`)
+      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual({
         "apiKey": Reporter.API_KEY,
@@ -78,8 +81,7 @@ describe("Reporter", () => {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
                     "file": "spec/reporter-spec.js",
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber,
-                    "inProject": true
+                    "columnNumber": columnNumber
                   }
                 ]
               }
@@ -111,6 +113,9 @@ describe("Reporter", () => {
       expect(request.url).toBe("https://notify.bugsnag.com")
       expect(request.headers.get("Content-Type")).toBe("application/json")
       let body = JSON.parse(request.body)
+      // Delete `inProject` field because tests may fail when run as part of Atom core
+      // (i.e. when this test file will be located under `node_modules/exception-reporting/spec`)
+      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual({
         "apiKey": Reporter.API_KEY,
@@ -131,8 +136,7 @@ describe("Reporter", () => {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
                     "file": '~/exception-reporting/spec/reporter-spec.js',
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber,
-                    "inProject": true
+                    "columnNumber": columnNumber
                   }
                 ]
               }
@@ -286,6 +290,9 @@ describe("Reporter", () => {
       expect(request.url).toBe("https://notify.bugsnag.com")
       expect(request.headers.get("Content-Type")).toBe("application/json")
       let body = JSON.parse(request.body)
+      // Delete `inProject` field because tests may fail when run as part of Atom core
+      // (i.e. when this test file will be located under `node_modules/exception-reporting/spec`)
+      delete body.events[0].exceptions[0].stacktrace[0].inProject
 
       expect(body).toEqual({
         "apiKey": Reporter.API_KEY,
@@ -306,8 +313,7 @@ describe("Reporter", () => {
                     "method": semver.gt(process.versions.electron, '1.6.0') ? 'Spec.it' : 'it',
                     "file": '~/exception-reporting/spec/reporter-spec.js',
                     "lineNumber": lineNumber,
-                    "columnNumber": columnNumber,
-                    "inProject": true
+                    "columnNumber": columnNumber
                   }
                 ]
               }
